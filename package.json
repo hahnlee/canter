@@ -1,0 +1,11 @@
+{
+  "name": "canter",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "typescript": "^4.4.3"
+  }
+}
