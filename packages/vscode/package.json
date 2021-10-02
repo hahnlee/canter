@@ -1,6 +1,16 @@
 {
   "name": "@canter/vscode",
   "private": true,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hahnlee/canter.git"
+  },
+  "homepage": "https://github.com/hahnlee/canter/tree/main/packages/vscode",
+  "bugs": {
+    "email": "hanlee.dev@gmail.com",
+    "url": "https://github.com/hahnlee/canter/issues"
+  },
   "scripts": {
     "vscode:prepublish": "yarn run package",
     "compile": "webpack --config ./build/node-extension.webpack.config.js",
