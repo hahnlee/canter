@@ -23,7 +23,7 @@ const handleConnected = async (device) => {
 }
 
 connector.addEventListener('connected', handleConnected)
-connector.addEventListener('connected', handleConnected)
+connector.removeEventListener('connected', handleConnected)
 
 connector.subscribe()
 
