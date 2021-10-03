@@ -6,7 +6,6 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=CoreFoundation");
 
     cc::Build::new()
-        .file("src/c-api/lib.c")
-        .flag("-F /Library/Apple/System/Library/PrivateFrameworks")
-        .compile("c-api");
+        .file("src/c_api/lib.c")
+        .compile("c_api");
 }

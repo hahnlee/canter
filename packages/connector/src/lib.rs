@@ -1,18 +1,6 @@
-#[cfg(test)]
-mod tests {
-    extern {
-        fn subscribeDeviceNotification();
-    }
+mod c_api;
 
-    pub fn subscribe() {
-        unsafe {
-            subscribeDeviceNotification();
-            core_foundation::runloop::CFRunLoopRun();
-        }
-    }
-
-    #[test]
-    fn it_works() {
-        subscribe();
-    }
+#[test]
+fn it_works() {
+    c_api::subscribe();
 }

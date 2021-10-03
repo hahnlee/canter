@@ -10,9 +10,23 @@
 #include <mach/error.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-#define ADNCI_MSG_CONNECTED     1
-#define ADNCI_MSG_DISCONNECTED  2
-#define ADNCI_MSG_UNSUBSCRIBED  3
+#define ADNCI_MSG_CONNECTED 1
+#define ADNCI_MSG_DISCONNECTED 2
+#define ADNCI_MSG_UNSUBSCRIBED 3
+
+struct am_device
+{
+    unsigned char unknown0[16];
+    unsigned int device_id;
+    unsigned int product_id;
+    char *serial;
+    unsigned int unknown1;
+    unsigned int unknown2;
+    unsigned int lockdown_conn;
+    unsigned char unknown3[8];
+    unsigned int unknown4;
+    unsigned char unknown5[24];
+};
 
 struct am_device_notification_callback_info
 {
