@@ -11,6 +11,6 @@ static void handleDeviceNotification(struct am_device_notification_callback_info
   }
 }
 
-extern void subscribeDeviceNotification() {
+extern "C" void subscribeDeviceNotification() {
   AMDeviceNotificationSubscribe(&handleDeviceNotification, 0, 0, 0, &device_notification);
 }
