@@ -7,8 +7,10 @@ static struct am_device_notification *device_notification = NULL;
 
 extern "C" const char * getUDID(am_device device)
 {
-  CFStringRef udid = AMDeviceCopyDeviceIdentifier(&device);
-  return CFStringGetCStringPtr(udid, kCFStringEncodingUTF8);
+  CFStringRef nsUDID = AMDeviceCopyDeviceIdentifier(&device);
+  const char* udid = CFStringGetCStringPtr(nsUDID, kCFStringEncodingUTF8);
+  CFRelease(nsUDID);
+  return udid;
 }
 
 extern "C" void AMDeviceNotificationSubscribeBridge(am_device_notification_callback callback)
