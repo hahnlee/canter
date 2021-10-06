@@ -1,16 +1,17 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <vector>
 #include "includes/MobileDevice.h"
 
 static struct am_device_notification *device_notification = NULL;
 
-static void handleDeviceNotification(struct am_device_notification_callback_info *info, int cookie) {
-  if (info->msg == ADNCI_MSG_CONNECTED) {
-    CFStringRef udid = AMDeviceCopyDeviceIdentifier(info->dev);
-    printf("UDID: %s\n", CFStringGetCStringPtr(udid, kCFStringEncodingUTF8));
-  }
+extern "C" const char * getUDID(am_device device)
+{
+  CFStringRef udid = AMDeviceCopyDeviceIdentifier(&device);
+  return CFStringGetCStringPtr(udid, kCFStringEncodingUTF8);
 }
 
-extern "C" void subscribeDeviceNotification() {
-  AMDeviceNotificationSubscribe(&handleDeviceNotification, 0, 0, 0, &device_notification);
+extern "C" void AMDeviceNotificationSubscribeBridge(am_device_notification_callback callback)
+{
+  AMDeviceNotificationSubscribe(callback, 0, 0, 0, &device_notification);
 }
