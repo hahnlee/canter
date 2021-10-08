@@ -33,22 +33,30 @@ struct am_device_notification {
     pub cookie: libc::c_uint,
 }
 
-type AMDeviceNotificationCallback = extern "C" fn(_: *mut am_device_notification_callback_info, _: *mut libc::c_void);
+type AMDeviceNotificationCallback =
+    extern "C" fn(_: *mut am_device_notification_callback_info, _: *mut libc::c_void);
 
 #[allow(dead_code)]
-extern {
-    fn getUDID(device: am_device) -> * const libc::c_char;
-    fn AMDeviceNotificationSubscribeBridge(callback: AMDeviceNotificationCallback, manager: *mut libc::c_void, timeout: f64);
+extern "C" {
+    fn getUDID(device: am_device) -> *const libc::c_char;
+    fn AMDeviceNotificationSubscribeBridge(
+        callback: AMDeviceNotificationCallback,
+        manager: *mut libc::c_void,
+        timeout: f64,
+    );
 }
 
-fn get_device_udid(device: am_device) -> String {
+pub fn get_device_udid(device: am_device) -> String {
     let char_ptr = unsafe { getUDID(device) };
     let c_str = unsafe { std::ffi::CStr::from_ptr(char_ptr) };
     return String::from(c_str.to_str().unwrap());
 }
 
 #[allow(dead_code)]
-extern "C" fn handle_am_device_notification(target: *mut am_device_notification_callback_info, args: *mut libc::c_void) {
+extern "C" fn handle_am_device_notification(
+    target: *mut am_device_notification_callback_info,
+    args: *mut libc::c_void,
+) {
     let manager = args as *mut HashMap<String, am_device>;
     unsafe {
         let device = *(*target).dev;

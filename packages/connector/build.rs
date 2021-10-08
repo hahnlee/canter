@@ -6,6 +6,6 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=CoreFoundation");
 
     cc::Build::new()
-        .file("src/bridge/lib.c")
+        .file("src/device/bridge/lib.c")
         .compile("bridge");
 }

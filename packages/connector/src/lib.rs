@@ -1,7 +1,7 @@
-mod bridge;
+pub mod device;
 
 #[test]
 fn it_works() {
-    let devices = bridge::get_device_map(0.1);
-    println!("{:?}", devices.keys());
+    let devices = device::get_devices(0.1);
+    println!("{:?}", devices.values());
 }
