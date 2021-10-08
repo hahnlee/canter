@@ -5,17 +5,35 @@ use std::fmt;
 
 pub struct Device<'a> {
     am_device: &'a bridge::am_device,
+    pub connected: bool,
 }
 
 impl Device<'_> {
     pub fn new(am_device: &bridge::am_device) -> Device {
         Device {
             am_device: am_device,
+            connected: false,
         }
     }
 
     pub fn get_udid(&self) -> String {
         bridge::get_device_udid(&self.am_device)
+    }
+
+    pub fn connect(&mut self) {
+        if self.connected {
+            return;
+        }
+
+        self.connected = true;
+    }
+
+    pub fn disconnect(&mut self) {
+        if !self.connected {
+            return;
+        }
+
+        self.connected = false;
     }
 }
 
@@ -23,6 +41,7 @@ impl fmt::Debug for Device<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Device")
             .field("udid", &self.get_udid())
+            .field("connected", &self.connected)
             .finish()
     }
 }

@@ -60,8 +60,6 @@ extern "C" fn handle_am_device_notification(
         &*(*target).dev
     };
     unsafe {
-        let callback_info = *target;
-        
         let udid = get_device_udid(device);
         (*manager).insert(udid, device);
     }
