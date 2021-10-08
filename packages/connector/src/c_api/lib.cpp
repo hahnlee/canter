@@ -13,7 +13,8 @@ extern "C" const char * getUDID(am_device device)
   return udid;
 }
 
-extern "C" void AMDeviceNotificationSubscribeBridge(am_device_notification_callback callback)
+extern "C" void AMDeviceNotificationSubscribeBridge(am_device_notification_callback callback, void * manager, double timeout)
 {
-  AMDeviceNotificationSubscribe(callback, 0, 0, 0, &device_notification);
+  AMDeviceNotificationSubscribe(callback, 0, 0, manager, &device_notification);
+  CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, FALSE);
 }
