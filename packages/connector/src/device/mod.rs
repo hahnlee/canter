@@ -48,9 +48,7 @@ impl Device<'_> {
 
         self.pair();
 
-        let session_result = unsafe {
-            bridge::AMDeviceStartSession(self.am_device)
-        };
+        let session_result = unsafe { bridge::AMDeviceStartSession(self.am_device) };
         if session_result != 0 {
             panic!("couldn't start session");
         }
@@ -65,7 +63,7 @@ impl Device<'_> {
 
         unsafe {
             bridge::AMDeviceStopSession(self.am_device);
-			bridge::AMDeviceDisconnect(self.am_device);
+            bridge::AMDeviceDisconnect(self.am_device);
         };
 
         self.connected = false;

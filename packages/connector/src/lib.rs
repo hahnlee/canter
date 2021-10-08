@@ -3,7 +3,6 @@ pub mod device;
 #[test]
 fn it_works() {
     let mut devices = device::get_devices(0.1);
-    
     println!("{:?}", devices.values());
     let selected = devices.values_mut().nth(0);
 
@@ -17,6 +16,6 @@ fn it_works() {
             v.disconnect();
             assert_eq!(v.connected, false);
         }
-        None => {},
+        None => {}
     }
 }

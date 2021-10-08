@@ -62,9 +62,7 @@ extern "C" fn handle_am_device_notification(
     args: *mut libc::c_void,
 ) {
     let manager = args as *mut HashMap<String, &am_device>;
-    let device = unsafe {
-        &*(*target).dev
-    };
+    let device = unsafe { &*(*target).dev };
     unsafe {
         let udid = get_device_udid(device);
         (*manager).insert(udid, device);
