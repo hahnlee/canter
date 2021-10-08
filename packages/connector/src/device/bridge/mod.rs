@@ -35,7 +35,6 @@ struct am_device_notification {
 type AMDeviceNotificationCallback =
     extern "C" fn(_: *const am_device_notification_callback_info, _: *mut libc::c_void);
 
-#[allow(dead_code)]
 extern "C" {
     fn getUDID(device: *const am_device) -> *const libc::c_char;
     fn AMDeviceNotificationSubscribeBridge(
@@ -43,6 +42,13 @@ extern "C" {
         manager: *mut libc::c_void,
         timeout: f64,
     );
+    pub fn AMDeviceConnect(device: *const am_device) -> i32;
+    pub fn AMDeviceIsPaired(device: *const am_device) -> i32;
+    pub fn AMDevicePair(device: *const am_device) -> i32;
+    pub fn AMDeviceValidatePairing(device: *const am_device) -> i32;
+    pub fn AMDeviceStartSession(device: *const am_device) -> i32;
+    pub fn AMDeviceStopSession(device: *const am_device) -> i32;
+    pub fn AMDeviceDisconnect(device: *const am_device) -> i32;
 }
 
 pub fn get_device_udid(device: &am_device) -> String {

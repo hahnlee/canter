@@ -20,9 +20,39 @@ impl Device<'_> {
         bridge::get_device_udid(&self.am_device)
     }
 
+    fn pair(&self) {
+        let is_paired = unsafe { bridge::AMDeviceIsPaired(self.am_device) };
+        if is_paired != 1 {
+            let pair_result = unsafe { bridge::AMDevicePair(self.am_device) };
+            if pair_result != 0 {
+                panic!("device locked");
+            }
+        }
+
+        let is_valid = unsafe { bridge::AMDeviceValidatePairing(self.am_device) };
+
+        if is_valid != 0 {
+            panic!("validation failed");
+        }
+    }
+
     pub fn connect(&mut self) {
         if self.connected {
             return;
+        }
+
+        let result = unsafe { bridge::AMDeviceConnect(self.am_device) };
+        if result != 0 {
+            panic!("not connected");
+        }
+
+        self.pair();
+
+        let session_result = unsafe {
+            bridge::AMDeviceStartSession(self.am_device)
+        };
+        if session_result != 0 {
+            panic!("couldn't start session");
         }
 
         self.connected = true;
@@ -32,6 +62,11 @@ impl Device<'_> {
         if !self.connected {
             return;
         }
+
+        unsafe {
+            bridge::AMDeviceStopSession(self.am_device);
+			bridge::AMDeviceDisconnect(self.am_device);
+        };
 
         self.connected = false;
     }
