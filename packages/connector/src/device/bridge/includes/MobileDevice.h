@@ -50,4 +50,6 @@ mach_error_t AMDeviceNotificationSubscribe(am_device_notification_callback callb
 
 CFStringRef AMDeviceCopyDeviceIdentifier(struct am_device *device);
 
+mach_error_t AMDeviceConnect(struct am_device *device);
+
 #endif

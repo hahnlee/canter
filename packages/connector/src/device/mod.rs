@@ -3,23 +3,23 @@ mod bridge;
 use std::collections::HashMap;
 use std::fmt;
 
-pub struct Device {
-    am_device: bridge::am_device,
+pub struct Device<'a> {
+    am_device: &'a bridge::am_device,
 }
 
-impl Device {
-    pub fn new(am_device: bridge::am_device) -> Device {
+impl Device<'_> {
+    pub fn new(am_device: &bridge::am_device) -> Device {
         Device {
             am_device: am_device,
         }
     }
 
     pub fn get_udid(&self) -> String {
-        bridge::get_device_udid(self.am_device)
+        bridge::get_device_udid(&self.am_device)
     }
 }
 
-impl fmt::Debug for Device {
+impl fmt::Debug for Device<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Device")
             .field("udid", &self.get_udid())
@@ -27,7 +27,7 @@ impl fmt::Debug for Device {
     }
 }
 
-pub fn get_devices(timeout: f64) -> HashMap<String, Device> {
+pub fn get_devices<'a>(timeout: f64) -> HashMap<String, Device<'a>> {
     let am_devices = bridge::get_device_map(timeout);
     let mut devices = HashMap::new();
 

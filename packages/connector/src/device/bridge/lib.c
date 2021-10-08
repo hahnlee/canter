@@ -4,9 +4,9 @@
 
 static struct am_device_notification *device_notification = NULL;
 
-const char * getUDID(struct am_device device)
+const char * getUDID(struct am_device * device)
 {
-  CFStringRef nsUDID = AMDeviceCopyDeviceIdentifier(&device);
+  CFStringRef nsUDID = AMDeviceCopyDeviceIdentifier(device);
   const char* udid = CFStringGetCStringPtr(nsUDID, kCFStringEncodingUTF8);
   CFRelease(nsUDID);
   return udid;
