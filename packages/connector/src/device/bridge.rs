@@ -1,5 +1,5 @@
 use core_foundation::string::CFStringRef;
-use libc::{c_char,c_uint,c_uchar,c_void};
+use libc::{c_char, c_uchar, c_uint, c_void};
 
 #[repr(C)]
 pub struct am_device {

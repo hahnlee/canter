@@ -4,15 +4,17 @@ use std::collections::HashMap;
 use std::fmt;
 
 use core_foundation::base::{Boolean, CFRelease, CFTypeRef, ToVoid};
-use core_foundation::runloop::{CFRunLoopRunInMode, kCFRunLoopDefaultMode};
-use core_foundation::string::{CFStringGetCStringPtr, kCFStringEncodingUTF8, CFString, CFStringRef};
+use core_foundation::runloop::{kCFRunLoopDefaultMode, CFRunLoopRunInMode};
+use core_foundation::string::{
+    kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringRef,
+};
 
 fn get_device_udid(device: &bridge::am_device) -> String {
     let char_ptr = unsafe {
-       let ns_uuid = bridge::AMDeviceCopyDeviceIdentifier(device);
-       let c_str_ptr = CFStringGetCStringPtr(ns_uuid, kCFStringEncodingUTF8);
-       CFRelease(ns_uuid as CFTypeRef);
-       c_str_ptr
+        let ns_uuid = bridge::AMDeviceCopyDeviceIdentifier(device);
+        let c_str_ptr = CFStringGetCStringPtr(ns_uuid, kCFStringEncodingUTF8);
+        CFRelease(ns_uuid as CFTypeRef);
+        c_str_ptr
     };
     let c_str = unsafe { std::ffi::CStr::from_ptr(char_ptr) };
     return String::from(c_str.to_str().unwrap());
@@ -134,7 +136,7 @@ impl Service<'_> {
         }
     }
 
-    pub fn start(& mut self, service_name: &str) {
+    pub fn start(&mut self, service_name: &str) {
         if self.started {
             panic!("already started");
         }
@@ -150,7 +152,6 @@ impl Service<'_> {
                 socket_fd_ptr,
             )
         };
-        
         if result != 0 {
             panic!("couldn't start service");
         }
