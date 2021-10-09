@@ -7,14 +7,17 @@ fn it_works() {
     let selected = devices.values_mut().nth(0);
 
     match selected {
-        Some(v) => {
-            assert_eq!(v.connected, false);
+        Some(phone) => {
+            assert_eq!(phone.connected, false);
 
-            v.connect();
-            assert_eq!(v.connected, true);
+            phone.connect();
+            assert_eq!(phone.connected, true);
 
-            v.disconnect();
-            assert_eq!(v.connected, false);
+            let service = phone.start_service("com.apple.webinspector");
+            assert_eq!(service.started, true);
+
+            phone.disconnect();
+            assert_eq!(phone.connected, false);
         }
         None => {}
     }

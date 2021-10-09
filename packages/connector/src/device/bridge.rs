@@ -51,4 +51,10 @@ extern "C" {
     pub fn AMDeviceStartSession(device: *const am_device) -> i32;
     pub fn AMDeviceStopSession(device: *const am_device) -> i32;
     pub fn AMDeviceDisconnect(device: *const am_device) -> i32;
+    pub fn AMDeviceSecureStartService(
+        device: *const am_device,
+        service_name: CFStringRef,
+        handle: *const u32,
+        socket_fd: *const i32,
+    ) -> i32;
 }

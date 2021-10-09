@@ -3,9 +3,9 @@ mod bridge;
 use std::collections::HashMap;
 use std::fmt;
 
-use core_foundation::base::{Boolean, CFRelease, CFTypeRef};
+use core_foundation::base::{Boolean, CFRelease, CFTypeRef, ToVoid};
 use core_foundation::runloop::{CFRunLoopRunInMode, kCFRunLoopDefaultMode};
-use core_foundation::string::{CFStringGetCStringPtr, kCFStringEncodingUTF8};
+use core_foundation::string::{CFStringGetCStringPtr, kCFStringEncodingUTF8, CFString, CFStringRef};
 
 fn get_device_udid(device: &bridge::am_device) -> String {
     let char_ptr = unsafe {
@@ -104,6 +104,58 @@ impl Device<'_> {
         };
 
         self.connected = false;
+    }
+
+    // TODO: use session trait
+    pub fn start_service(&self, service_name: &str) -> Service {
+        if !self.connected {
+            panic!("device not connected");
+        }
+
+        let mut service = Service::new(&self.am_device);
+        service.start(&service_name);
+
+        return service;
+    }
+}
+
+pub struct Service<'a> {
+    am_device: &'a bridge::am_device,
+    socket_fd: i32,
+    pub started: bool,
+}
+
+impl Service<'_> {
+    pub fn new(am_device: &bridge::am_device) -> Service {
+        Service {
+            am_device: am_device,
+            socket_fd: 0,
+            started: false,
+        }
+    }
+
+    pub fn start(& mut self, service_name: &str) {
+        if self.started {
+            panic!("already started");
+        }
+
+        let result = unsafe {
+            let ns_service_name = CFString::new(service_name);
+            let ns_service_name = ns_service_name.to_void() as CFStringRef;
+            let socket_fd_ptr: *const i32 = &self.socket_fd;
+            bridge::AMDeviceSecureStartService(
+                self.am_device,
+                ns_service_name,
+                std::ptr::null(),
+                socket_fd_ptr,
+            )
+        };
+        
+        if result != 0 {
+            panic!("couldn't start service");
+        }
+
+        self.started = true;
     }
 }
 
