@@ -1,6 +1,5 @@
 mod bridge;
 
-use std::collections::HashMap;
 use std::fmt;
 
 use core_foundation::base::{Boolean, CFRelease, CFTypeRef, ToVoid};
@@ -24,22 +23,11 @@ extern "C" fn handle_am_device_notification(
     target: *const bridge::am_device_notification_callback_info,
     args: *mut libc::c_void,
 ) {
-    let manager = args as *mut HashMap<String, &bridge::am_device>;
+    let manager = args as *mut Vec<Device>;
     let device = unsafe { &*(*target).dev };
     unsafe {
-        let udid = get_device_udid(device);
-        (*manager).insert(udid, device);
+        (*manager).push(Device::new(device));
     }
-}
-
-fn get_device_map<'a>(timeout: f64) -> HashMap<String, &'a bridge::am_device> {
-    let mut state: HashMap<String, &bridge::am_device> = HashMap::new();
-    unsafe {
-        let state_ptr: *mut libc::c_void = &mut state as *mut _ as *mut libc::c_void;
-        bridge::AMDeviceNotificationSubscribe(handle_am_device_notification, 0, 0, state_ptr);
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, false as Boolean);
-    }
-    return state;
 }
 
 pub struct Device<'a> {
@@ -169,12 +157,13 @@ impl fmt::Debug for Device<'_> {
     }
 }
 
-pub fn get_devices<'a>(timeout: f64) -> HashMap<String, Device<'a>> {
-    let am_devices = get_device_map(timeout);
-    let mut devices = HashMap::new();
+pub fn get_devices<'a>(timeout: f64) -> Vec<Device<'a>> {
+    let mut devices = Vec::new();
 
-    for (uuid, am_device) in am_devices {
-        devices.insert(uuid, Device::new(am_device));
+    unsafe {
+        let devices_ptr: *mut libc::c_void = &mut devices as *mut _ as *mut libc::c_void;
+        bridge::AMDeviceNotificationSubscribe(handle_am_device_notification, 0, 0, devices_ptr);
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, false as Boolean);
     }
 
     return devices;
