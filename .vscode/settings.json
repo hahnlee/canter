@@ -4,9 +4,5 @@
     "**/.pnp.*": true
   },
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "files.associations": {
-    "stddef.h": "c",
-    "mobiledevice.h": "c"
-  }
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
