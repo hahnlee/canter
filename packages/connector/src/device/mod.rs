@@ -3,6 +3,8 @@ mod bridge;
 use std::fmt;
 
 use core_foundation::base::{Boolean, CFRelease, CFTypeRef, ToVoid};
+use core_foundation::dictionary::CFDictionaryRef;
+use core_foundation::propertylist::kCFPropertyListBinaryFormat_v1_0;
 use core_foundation::runloop::{kCFRunLoopDefaultMode, CFRunLoopRunInMode};
 use core_foundation::string::{
     kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringRef,
@@ -102,49 +104,71 @@ impl Device<'_> {
             panic!("device not connected");
         }
 
-        let mut service = Service::new(&self.am_device);
-        service.start(&service_name);
-
-        return service;
+        return Service::new(&self.am_device, &service_name);
     }
 }
 
-pub struct Service<'a> {
-    am_device: &'a bridge::am_device,
-    socket_fd: i32,
-    pub started: bool,
+pub struct Service {
+    service_ptr: bridge::AMDServiceConnectionRef,
 }
 
-impl Service<'_> {
-    pub fn new(am_device: &bridge::am_device) -> Service {
-        Service {
-            am_device: am_device,
-            socket_fd: 0,
-            started: false,
-        }
-    }
-
-    pub fn start(&mut self, service_name: &str) {
-        if self.started {
-            panic!("already started");
-        }
-
-        let result = unsafe {
-            let ns_service_name = CFString::new(service_name);
+impl Service {
+    pub fn new(am_device: &bridge::am_device, service_name: &str) -> Service {
+        unsafe {
+            let ns_service_name = CFString::new(&service_name);
             let ns_service_name = ns_service_name.to_void() as CFStringRef;
-            let socket_fd_ptr: *const i32 = &self.socket_fd;
-            bridge::AMDeviceSecureStartService(
-                self.am_device,
+
+            let service_ptr: bridge::AMDServiceConnectionRef = std::ptr::null_mut();
+
+            let result = bridge::AMDeviceSecureStartService(
+                am_device,
                 ns_service_name,
-                std::ptr::null(),
-                socket_fd_ptr,
+                std::ptr::null_mut(),
+                &service_ptr,
+            );
+
+            if result != 0 {
+                panic!("couldn't start service {}", result);
+            }
+
+            return Service {
+                service_ptr: service_ptr,
+            };
+        }
+    }
+
+    pub fn send(&self, message: CFDictionaryRef) {
+        let result = unsafe {
+            bridge::AMDServiceConnectionSendMessage(
+                self.service_ptr,
+                message,
+                kCFPropertyListBinaryFormat_v1_0,
             )
         };
-        if result != 0 {
-            panic!("couldn't start service");
-        }
 
-        self.started = true;
+        if result != 0 {
+            panic!("couldn't send message {}", result);
+        }
+    }
+
+    pub fn receive(&self) -> CFDictionaryRef {
+        unsafe {
+            let response: CFDictionaryRef = std::ptr::null_mut();
+            let res = bridge::AMDServiceConnectionReceiveMessage(
+                self.service_ptr,
+                &response,
+                std::ptr::null(),
+                std::ptr::null(),
+                std::ptr::null(),
+                std::ptr::null(),
+            );
+
+            if res != 0 {
+                panic!("couldn't receive response");
+            }
+
+            response
+        }
     }
 }
 

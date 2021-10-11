@@ -1,4 +1,7 @@
+use core_foundation::dictionary::CFDictionaryRef;
+use core_foundation::propertylist::CFPropertyListFormat;
 use core_foundation::string::CFStringRef;
+
 use libc::{c_char, c_uchar, c_uint, c_void};
 
 #[repr(C)]
@@ -33,6 +36,19 @@ pub struct am_device_notification {
     pub cookie: c_uint,
 }
 
+#[repr(C)]
+pub struct amd_service_connection {
+    pub unknown: [u8; 16],
+    pub socket: u32,
+    pub unknown2: u32,
+    pub secure_io_context: *mut c_void,
+    pub flags: u32,
+    pub device_connection_id: u32,
+    pub service_name: [c_char; 128],
+}
+
+pub type AMDServiceConnectionRef = *const amd_service_connection;
+
 type AMDeviceNotificationCallback =
     extern "C" fn(_: *const am_device_notification_callback_info, _: *mut c_void);
 
@@ -54,7 +70,20 @@ extern "C" {
     pub fn AMDeviceSecureStartService(
         device: *const am_device,
         service_name: CFStringRef,
-        handle: *const u32,
-        socket_fd: *const i32,
+        options: CFDictionaryRef,
+        service_connection: *const AMDServiceConnectionRef,
+    ) -> i32;
+    pub fn AMDServiceConnectionSendMessage(
+        connection: AMDServiceConnectionRef,
+        message: CFDictionaryRef,
+        format: CFPropertyListFormat,
+    ) -> i32;
+    pub fn AMDServiceConnectionReceiveMessage(
+        connection: AMDServiceConnectionRef,
+        response: *const CFDictionaryRef,
+        format: *const CFPropertyListFormat,
+        unknown0: *const c_void,
+        unknown1: *const c_void,
+        unknown2: *const c_void,
     ) -> i32;
 }

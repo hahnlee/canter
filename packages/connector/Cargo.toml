@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 core-foundation = "0.9"
 libc = "0.2"
+uuid = { version = "0.8", features = ["serde", "v4"] }
