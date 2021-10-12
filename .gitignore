@@ -6,3 +6,8 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+debug/
+target/
+**/*.rs.bk
+*.pdb
