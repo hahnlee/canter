@@ -39,6 +39,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "reference": "workspace:packages/core/npm/darwin-x64"
       },
       {
+        "name": "@canter/selenium",
+        "reference": "workspace:packages/selenium"
+      },
+      {
         "name": "@canter/vscode",
         "reference": "workspace:packages/vscode"
       }
@@ -50,6 +54,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ["@canter/core", ["workspace:packages/core"]],
       ["@canter/core-darwin-arm64", ["workspace:packages/core/npm/darwin-arm64"]],
       ["@canter/core-darwin-x64", ["workspace:packages/core/npm/darwin-x64"]],
+      ["@canter/selenium", ["workspace:packages/selenium"]],
       ["@canter/vscode", ["workspace:packages/vscode"]],
       ["canter", ["workspace:."]]
     ],
@@ -132,6 +137,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./packages/core/npm/darwin-x64/",
           "packageDependencies": [
             ["@canter/core-darwin-x64", "workspace:packages/core/npm/darwin-x64"]
+          ],
+          "linkType": "SOFT",
+        }]
+      ]],
+      ["@canter/selenium", [
+        ["workspace:packages/selenium", {
+          "packageLocation": "./packages/selenium/",
+          "packageDependencies": [
+            ["@canter/selenium", "workspace:packages/selenium"]
           ],
           "linkType": "SOFT",
         }]

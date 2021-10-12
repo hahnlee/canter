@@ -66,6 +66,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canter/selenium@workspace:packages/selenium":
+  version: 0.0.0-use.local
+  resolution: "@canter/selenium@workspace:packages/selenium"
+  languageName: unknown
+  linkType: soft
+
 "@canter/vscode@workspace:packages/vscode":
   version: 0.0.0-use.local
   resolution: "@canter/vscode@workspace:packages/vscode"

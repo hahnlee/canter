@@ -1,16 +1,20 @@
 # @canter/core
+
 Core API of canter
 
 ## Usage
+
 ```js
-import { DeviceListener } from '@canter/core'
+const canter = require('@canter/core')
 
-const listener = new DeviceListener()
-const devices = listener.getDevices()
-const device = devices[0]
-device.connect()
+(async () => {
+  const target = await canter.launch({
+    udid: '<DEVICE_UDID>',
+    bundleId: 'com.apple.mobilesafari',
+  })
+  const page = await browser.newPage()
 
-await device.navigate('http://example.com')
-
-device.disconnect()
+  await target.navigate('http://example.com')
+  await target.close()
+})()
 ```
