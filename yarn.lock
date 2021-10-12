@@ -32,6 +32,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@canter/connector@workspace:packages/connector":
+  version: 0.0.0-use.local
+  resolution: "@canter/connector@workspace:packages/connector"
+  languageName: unknown
+  linkType: soft
+
+"@canter/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@canter/core@workspace:packages/core"
+  dependencies:
+    "@canter/connector": "workspace:packages/connector"
+  languageName: unknown
+  linkType: soft
+
 "@canter/selenium@workspace:packages/selenium":
   version: 0.0.0-use.local
   resolution: "@canter/selenium@workspace:packages/selenium"

@@ -1,3 +1,7 @@
+## Mac ##
+.DS_store
+
+## Node & yarn ##
 node_modules
 .yarn/*
 !.yarn/cache
@@ -6,7 +10,9 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+package.tgz
 
+## Rust ##
 debug/
 target/
 **/*.rs.bk

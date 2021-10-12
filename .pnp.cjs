@@ -23,6 +23,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "reference": "workspace:."
       },
       {
+        "name": "@canter/connector",
+        "reference": "workspace:packages/connector"
+      },
+      {
+        "name": "@canter/core",
+        "reference": "workspace:packages/core"
+      },
+      {
         "name": "@canter/selenium",
         "reference": "workspace:packages/selenium"
       },
@@ -34,6 +42,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     "enableTopLevelFallback": true,
     "ignorePatternData": "(^(?:\\.yarn\\/sdks(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?)|$))$)",
     "fallbackExclusionList": [
+      ["@canter/connector", ["workspace:packages/connector"]],
+      ["@canter/core", ["workspace:packages/core"]],
       ["@canter/selenium", ["workspace:packages/selenium"]],
       ["@canter/vscode", ["workspace:packages/vscode"]],
       ["canter", ["workspace:."]]
@@ -79,6 +89,25 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["js-tokens", "npm:4.0.0"]
           ],
           "linkType": "HARD",
+        }]
+      ]],
+      ["@canter/connector", [
+        ["workspace:packages/connector", {
+          "packageLocation": "./packages/connector/",
+          "packageDependencies": [
+            ["@canter/connector", "workspace:packages/connector"]
+          ],
+          "linkType": "SOFT",
+        }]
+      ]],
+      ["@canter/core", [
+        ["workspace:packages/core", {
+          "packageLocation": "./packages/core/",
+          "packageDependencies": [
+            ["@canter/core", "workspace:packages/core"],
+            ["@canter/connector", "workspace:packages/connector"]
+          ],
+          "linkType": "SOFT",
         }]
       ]],
       ["@canter/selenium", [
