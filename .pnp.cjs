@@ -31,6 +31,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "reference": "workspace:packages/core"
       },
       {
+        "name": "@canter/core-darwin-arm64",
+        "reference": "workspace:packages/core/npm/darwin-arm64"
+      },
+      {
+        "name": "@canter/core-darwin-x64",
+        "reference": "workspace:packages/core/npm/darwin-x64"
+      },
+      {
         "name": "@canter/vscode",
         "reference": "workspace:packages/vscode"
       }
@@ -40,6 +48,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     "fallbackExclusionList": [
       ["@canter/connector", ["workspace:packages/connector"]],
       ["@canter/core", ["workspace:packages/core"]],
+      ["@canter/core-darwin-arm64", ["workspace:packages/core/npm/darwin-arm64"]],
+      ["@canter/core-darwin-x64", ["workspace:packages/core/npm/darwin-x64"]],
       ["@canter/vscode", ["workspace:packages/vscode"]],
       ["canter", ["workspace:."]]
     ],
@@ -100,8 +110,28 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./packages/core/",
           "packageDependencies": [
             ["@canter/core", "workspace:packages/core"],
+            ["@canter/core-darwin-arm64", "workspace:packages/core/npm/darwin-arm64"],
+            ["@canter/core-darwin-x64", "workspace:packages/core/npm/darwin-x64"],
             ["@napi-rs/cli", "npm:1.3.3"],
             ["@node-rs/helper", "npm:1.2.1"]
+          ],
+          "linkType": "SOFT",
+        }]
+      ]],
+      ["@canter/core-darwin-arm64", [
+        ["workspace:packages/core/npm/darwin-arm64", {
+          "packageLocation": "./packages/core/npm/darwin-arm64/",
+          "packageDependencies": [
+            ["@canter/core-darwin-arm64", "workspace:packages/core/npm/darwin-arm64"]
+          ],
+          "linkType": "SOFT",
+        }]
+      ]],
+      ["@canter/core-darwin-x64", [
+        ["workspace:packages/core/npm/darwin-x64", {
+          "packageLocation": "./packages/core/npm/darwin-x64/",
+          "packageDependencies": [
+            ["@canter/core-darwin-x64", "workspace:packages/core/npm/darwin-x64"]
           ],
           "linkType": "SOFT",
         }]

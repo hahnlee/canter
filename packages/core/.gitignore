@@ -4,3 +4,4 @@ target/
 *.pdb
 core.darwin-arm64.node
 core.darwin-x64.node
+core.node

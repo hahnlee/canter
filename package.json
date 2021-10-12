@@ -13,7 +13,8 @@
     "url": "https://github.com/hahnlee/canter/issues"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/core/npm/*"
   ],
   "dependencies": {
     "typescript": "^4.4.3"

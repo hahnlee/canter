@@ -38,12 +38,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canter/core-darwin-arm64@0.0.0, @canter/core-darwin-arm64@workspace:packages/core/npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@canter/core-darwin-arm64@workspace:packages/core/npm/darwin-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@canter/core-darwin-x64@0.0.0, @canter/core-darwin-x64@workspace:packages/core/npm/darwin-x64":
+  version: 0.0.0-use.local
+  resolution: "@canter/core-darwin-x64@workspace:packages/core/npm/darwin-x64"
+  languageName: unknown
+  linkType: soft
+
 "@canter/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@canter/core@workspace:packages/core"
   dependencies:
+    "@canter/core-darwin-arm64": 0.0.0
+    "@canter/core-darwin-x64": 0.0.0
     "@napi-rs/cli": ^1.2.1
     "@node-rs/helper": ^1.2.1
+  dependenciesMeta:
+    "@canter/core-darwin-arm64":
+      optional: true
+    "@canter/core-darwin-x64":
+      optional: true
   languageName: unknown
   linkType: soft
 
