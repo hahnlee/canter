@@ -1,0 +1,6 @@
+debug/
+target/
+**/*.rs.bk
+*.pdb
+core.darwin-arm64.node
+core.darwin-x64.node

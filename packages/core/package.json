@@ -1,14 +1,35 @@
 {
   "name": "@canter/core",
-  "version": "0.0.1",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hahnlee/canter.git"
+  "version": "0.0.0",
+  "napi": {
+    "name": "core",
+    "triples": {
+      "defaults": false,
+      "additional": [
+        "aarch64-apple-darwin",
+        "x86_64-apple-darwin"
+      ]
+    }
   },
-  "homepage": "https://github.com/hahnlee/canter/tree/main/packages/core",
-  "bugs": {
-    "email": "hanlee.dev@gmail.com",
-    "url": "https://github.com/hahnlee/canter/issues"
+  "license": "MIT",
+  "dependencies": {
+    "@node-rs/helper": "^1.2.1"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^1.2.1"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "version": "napi version"
+  },
+  "optionalDependencies": {
+    "@canter/core-darwin-arm64": "0.0.0",
+    "@canter/core-darwin-x64": "0.0.0"
   }
 }
