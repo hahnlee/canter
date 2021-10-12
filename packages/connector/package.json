@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "description": "apple mobile device connector for node.js",
+  "types": "./index.d.ts",
   "os": [
     "darwin"
   ]

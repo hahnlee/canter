@@ -6,6 +6,11 @@
     "darwin"
   ],
   "dependencies": {
-    "@canter/connector": "workspace:packages/connector"
+    "@canter/connector": "workspace:packages/connector",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/uuid": "^8.3.1",
+    "typescript": "^4.4.3"
   }
 }
