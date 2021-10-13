@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "canter-connector"
+name = "canter"
 version = "0.1.0"
 dependencies = [
  "core-foundation",
