@@ -14,6 +14,8 @@ use uuid::Uuid;
 
 #[test]
 fn it_works() {
+    println!("start test");
+
     let mut devices = device::get_devices(0.1);
     println!("{:?}", devices);
 
