@@ -1,6 +1,6 @@
 export declare class AMService {
-  sendMessage(message: unknown): void;
-  receiveMessage<T>(): T;
+  send(message: unknown): void;
+  receive<T>(): T;
 }
 
 export declare class AMDevice {

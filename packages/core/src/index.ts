@@ -14,7 +14,7 @@ export class Device {
   }
 
   sendMessage = (name: string, params: unknown) => {
-    this.service.sendMessage({
+    this.service.send({
       __selector: name,
       __argument: params,
     })

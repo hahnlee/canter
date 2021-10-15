@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, JsObject, JsUndefined, Property, Result};
+use napi::{CallContext, JsObject, JsUndefined, JsString, Property, Result};
 
 #[module_exports]
 fn init(mut exports: JsObject) -> Result<()> {
@@ -19,6 +19,7 @@ fn get_devices(ctx: CallContext) -> Result<JsObject> {
     &vec![
       Property::new(ctx.env, "connect")?.with_method(connect),
       Property::new(ctx.env, "disconnect")?.with_method(disconnect),
+      Property::new(ctx.env, "startService")?.with_method(start_service),
     ],
   )?;
 
@@ -57,5 +58,31 @@ fn disconnect(ctx: CallContext) -> Result<JsUndefined> {
 
   device.disconnect();
 
+  ctx.env.get_undefined()
+}
+
+#[js_function(2)]
+fn start_service(ctx: CallContext) -> Result<JsObject> {
+  let this = ctx.this_unchecked::<JsObject>();
+  let device = ctx.env.unwrap::<canter::device::Device>(&this)?;
+
+  let service = device.start_service(ctx.get::<JsString>(0)?.into_utf8()?.as_str()?);
+
+  let service_class = ctx.env.define_class(
+    "Service",
+    service_constructor,
+    &vec![
+    ],
+  )?;
+
+  let arguments: Vec<JsUndefined> = vec![];
+  let mut instance = service_class.new(&arguments)?;
+  ctx.env.wrap(&mut instance, service)?;
+
+  Ok(instance)
+}
+
+#[js_function(1)]
+fn service_constructor(ctx: CallContext) -> Result<JsUndefined> {
   ctx.env.get_undefined()
 }
