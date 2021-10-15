@@ -10,6 +10,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
+canter = { path = "../.." }
 napi = "1"
 napi-derive = "1"
 

@@ -1,49 +1,36 @@
-#![deny(clippy::all)]
-
 #[macro_use]
 extern crate napi_derive;
 
-use std::convert::TryInto;
-
-use napi::{CallContext, Env, JsNumber, JsObject, Result, Task};
-
-struct AsyncTask(u32);
-
-impl Task for AsyncTask {
-  type Output = u32;
-  type JsValue = JsNumber;
-
-  fn compute(&mut self) -> Result<Self::Output> {
-    use std::thread::sleep;
-    use std::time::Duration;
-    sleep(Duration::from_millis(self.0 as u64));
-    Ok(self.0 * 2)
-  }
-
-  fn resolve(self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
-    env.create_uint32(output)
-  }
-}
+use napi::{CallContext, JsObject, JsString, JsUndefined, Property, Result};
 
 #[module_exports]
 fn init(mut exports: JsObject) -> Result<()> {
-  exports.create_named_method("sync", sync_fn)?;
-
-  exports.create_named_method("sleep", sleep)?;
+  exports.create_named_method("getDevices", get_devices)?;
   Ok(())
 }
 
-#[js_function(1)]
-fn sync_fn(ctx: CallContext) -> Result<JsNumber> {
-  let argument: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
+#[js_function]
+fn get_devices(ctx: CallContext) -> Result<JsObject> {
+  let devices = canter::device::get_devices(0.25);
 
-  ctx.env.create_uint32(argument + 100)
+  let device_class = ctx
+    .env
+    .define_class("Device", device_constructor, &vec![])?;
+
+  let mut array = ctx.env.create_array_with_length(devices.len())?;
+
+  for (index, device) in devices.into_iter().enumerate() {
+    let arguments: Vec<JsUndefined> = vec![];
+    let mut instance = device_class.new(&arguments)?;
+    instance.set_named_property("udid", ctx.env.create_string(&device.get_udid())?)?;
+    ctx.env.wrap(&mut instance, device)?;
+    array.set_element(index as u32, instance)?;
+  }
+
+  Ok(array)
 }
 
 #[js_function(1)]
-fn sleep(ctx: CallContext) -> Result<JsObject> {
-  let argument: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
-  let task = AsyncTask(argument);
-  let async_task = ctx.env.spawn(task)?;
-  Ok(async_task.promise_object())
+fn device_constructor(ctx: CallContext) -> Result<JsUndefined> {
+  ctx.env.get_undefined()
 }
