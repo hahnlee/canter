@@ -181,7 +181,7 @@ impl fmt::Debug for Device<'_> {
     }
 }
 
-pub fn get_devices<'a>(timeout: f64) -> Vec<Device<'a>> {
+pub fn get_devices(timeout: f64) -> Vec<Device<'static>> {
     let mut devices = Vec::new();
 
     unsafe {
