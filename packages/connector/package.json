@@ -27,10 +27,6 @@
     "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version"
   },
-  "optionalDependencies": {
-    "@canter/connector-darwin-arm64": "0.0.1",
-    "@canter/connector-darwin-x64": "0.0.1"
-  },
   "devDependencies": {
     "@napi-rs/cli": "^1.3.3"
   },
