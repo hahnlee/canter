@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, JsObject, JsString, JsUndefined, Property, Result};
+use napi::{CallContext, JsObject, JsUndefined, Property, Result};
 
 #[module_exports]
 fn init(mut exports: JsObject) -> Result<()> {
@@ -13,9 +13,14 @@ fn init(mut exports: JsObject) -> Result<()> {
 fn get_devices(ctx: CallContext) -> Result<JsObject> {
   let devices = canter::device::get_devices(0.25);
 
-  let device_class = ctx
-    .env
-    .define_class("Device", device_constructor, &vec![])?;
+  let device_class = ctx.env.define_class(
+    "Device",
+    device_constructor,
+    &vec![
+      Property::new(ctx.env, "connect")?.with_method(connect),
+      Property::new(ctx.env, "disconnect")?.with_method(disconnect),
+    ],
+  )?;
 
   let mut array = ctx.env.create_array_with_length(devices.len())?;
 
@@ -32,5 +37,25 @@ fn get_devices(ctx: CallContext) -> Result<JsObject> {
 
 #[js_function(1)]
 fn device_constructor(ctx: CallContext) -> Result<JsUndefined> {
+  ctx.env.get_undefined()
+}
+
+#[js_function(2)]
+fn connect(ctx: CallContext) -> Result<JsUndefined> {
+  let this = ctx.this_unchecked::<JsObject>();
+  let device = ctx.env.unwrap::<canter::device::Device>(&this)?;
+
+  device.connect();
+
+  ctx.env.get_undefined()
+}
+
+#[js_function(2)]
+fn disconnect(ctx: CallContext) -> Result<JsUndefined> {
+  let this = ctx.this_unchecked::<JsObject>();
+  let device = ctx.env.unwrap::<canter::device::Device>(&this)?;
+
+  device.disconnect();
+
   ctx.env.get_undefined()
 }
