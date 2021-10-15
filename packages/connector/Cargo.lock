@@ -16,6 +16,8 @@ name = "canter-connector"
 version = "0.0.1"
 dependencies = [
  "canter",
+ "core-foundation",
+ "libc",
  "napi",
  "napi-build",
  "napi-derive",

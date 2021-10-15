@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, JsObject, JsUndefined, JsString, Property, Result};
+use napi::{CallContext, JsObject, JsString, JsUndefined, Property, Result};
+
+mod cf;
 
 #[module_exports]
 fn init(mut exports: JsObject) -> Result<()> {
@@ -72,6 +74,8 @@ fn start_service(ctx: CallContext) -> Result<JsObject> {
     "Service",
     service_constructor,
     &vec![
+      Property::new(ctx.env, "send")?.with_method(send),
+      Property::new(ctx.env, "receive")?.with_method(receive),
     ],
   )?;
 
@@ -85,4 +89,25 @@ fn start_service(ctx: CallContext) -> Result<JsObject> {
 #[js_function(1)]
 fn service_constructor(ctx: CallContext) -> Result<JsUndefined> {
   ctx.env.get_undefined()
+}
+
+#[js_function(1)]
+fn send(ctx: CallContext) -> Result<JsUndefined> {
+  let this = ctx.this_unchecked::<JsObject>();
+  let service = ctx.env.unwrap::<canter::device::Service>(&this)?;
+
+  let message = ctx.get::<JsObject>(0)?;
+  service.send(cf::to_cf_dictionary(message));
+
+  ctx.env.get_undefined()
+}
+
+#[js_function(1)]
+fn receive(ctx: CallContext) -> Result<JsObject> {
+  let this = ctx.this_unchecked::<JsObject>();
+  let service = ctx.env.unwrap::<canter::device::Service>(&this)?;
+
+  let obj = cf::from_object(ctx.env, service.receive());
+
+  Ok(obj)
 }

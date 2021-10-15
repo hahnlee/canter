@@ -11,6 +11,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 canter = { path = "../.." }
+core-foundation = "0.9"
+libc = "0.2"
 napi = "1"
 napi-derive = "1"
 
