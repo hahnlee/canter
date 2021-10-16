@@ -1,5 +1,5 @@
 # Canter
-Canter ios safari remote debugging helper.
+Canter iOS safari remote debugging helper.
 Developed for safari/webview e2e testing on iPhone.
 Works only on macOS.
 
