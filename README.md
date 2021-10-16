@@ -1,5 +1,34 @@
 # Canter
-Canter; Safari remote debugging helper
+Canter ios safari remote debugging helper.
+Developed for safari/webview e2e testing on iPhone.
+Works only on macOS.
+
+# Usage
+```ts
+import * as canter from '@canter/core'
+
+const service = canter.launch({
+  udid: '<device udid>', // optional
+  bundle: '<app bundle id>', // optional (default com.apple.mobilesafari)
+})
+
+const page = await service.pages()[0];
+page.goto('https://example.com');
+```
+
+# Packages
+- `@canter/core`
+- `@canter/connector`
+
+## WIP
+- `@canter/webdriver`
+- `@canter/selenium`
+- `@canter/vscode`
+
+# Note
+0.x version will not follow semver.
+- minor version change has breaking changes
+- patch version change has bug fixes and new features 
 
 # License
 ```
