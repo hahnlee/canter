@@ -55,7 +55,7 @@ export class WIService {
       WIRApplicationIdentifierKey: bundle,
     })
 
-    // TODO: (@hanlee) do not block main thread
+    // TODO: (@hahnlee) do not block main thread
     while (
       this.service.receive<RpcResponse<any>>().__argument ===
       '_rpc_applicationConnected:'
