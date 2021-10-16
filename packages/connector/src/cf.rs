@@ -6,15 +6,21 @@ use core_foundation::dictionary::{
     CFDictionaryGetTypeID, CFDictionaryRef, CFMutableDictionaryRef,
 };
 use core_foundation::number::{
-    kCFNumberSInt64Type, CFNumberGetType, CFNumberGetTypeID, CFNumberGetValue, CFNumberRef,
+    kCFNumberSInt64Type, CFNumber, CFNumberGetType, CFNumberGetTypeID, CFNumberGetValue,
+    CFNumberRef,
 };
 use core_foundation::string::{
     kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringGetTypeID, CFStringRef,
 };
 use libc::c_void;
-use napi::{Env, JsObject, JsString, JsUnknown, ValueType};
+use napi::{Env, JsBoolean, JsFunction, JsNumber, JsObject, JsString, JsUnknown, ValueType};
 
-pub fn set_cf_dict(dict_ref: CFMutableDictionaryRef, key: *const c_void, unknown: JsUnknown) {
+pub fn set_cf_dict(
+    dict_ref: CFMutableDictionaryRef,
+    key: *const c_void,
+    unknown: JsUnknown,
+    env: &Env,
+) {
     let object_type = unknown.get_type().unwrap();
 
     if object_type == ValueType::String {
@@ -53,7 +59,7 @@ pub fn set_cf_dict(dict_ref: CFMutableDictionaryRef, key: *const c_void, unknown
                 .get_property::<JsString, JsUnknown>(elem_key)
                 .unwrap();
             let ns_key = CFString::new(elem_key.into_utf8().unwrap().as_str().unwrap());
-            set_cf_dict(new_dict_ref, ns_key.to_void(), value);
+            set_cf_dict(new_dict_ref, ns_key.to_void(), value, env);
         }
 
         unsafe {
@@ -61,9 +67,48 @@ pub fn set_cf_dict(dict_ref: CFMutableDictionaryRef, key: *const c_void, unknown
         }
         return;
     }
+
+    if object_type == ValueType::Number {
+        let value = unknown.coerce_to_number().unwrap();
+        let cf_number = to_cf_number(value, env);
+
+        unsafe {
+            CFDictionaryAddValue(dict_ref, key, cf_number.to_void());
+        }
+    }
 }
 
-pub fn to_cf_dictionary(object: JsObject) -> CFMutableDictionaryRef {
+fn to_cf_number(value: JsNumber, env: &Env) -> CFNumber {
+    // TODO: do better way
+    let number_object = env
+        .get_global()
+        .unwrap()
+        .get_property::<JsString, JsFunction>(env.create_string("Number").unwrap())
+        .unwrap()
+        .coerce_to_object()
+        .unwrap();
+
+    let is_integer_fn = number_object
+        .get_property::<JsString, JsFunction>(env.create_string("isInteger").unwrap())
+        .unwrap();
+
+    let is_integer = unsafe {
+        is_integer_fn
+            .call(None, &[value])
+            .unwrap()
+            .cast::<JsBoolean>()
+            .get_value()
+            .unwrap()
+    };
+
+    if is_integer {
+        CFNumber::from(value.get_int32().unwrap())
+    } else {
+        CFNumber::from(value.get_double().unwrap())
+    }
+}
+
+pub fn to_cf_dictionary(object: JsObject, env: &Env) -> CFMutableDictionaryRef {
     let properties = object.get_property_names().unwrap();
     let length = properties.get_array_length_unchecked().unwrap();
 
@@ -80,7 +125,7 @@ pub fn to_cf_dictionary(object: JsObject) -> CFMutableDictionaryRef {
         let key = properties.get_element::<JsString>(i).unwrap();
         let value = object.get_property::<JsString, JsUnknown>(key).unwrap();
         let ns_key = CFString::new(key.into_utf8().unwrap().as_str().unwrap());
-        set_cf_dict(dict_ref, ns_key.to_void(), value);
+        set_cf_dict(dict_ref, ns_key.to_void(), value, env);
     }
 
     dict_ref

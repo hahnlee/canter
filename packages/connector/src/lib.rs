@@ -97,7 +97,7 @@ fn send(ctx: CallContext) -> Result<JsUndefined> {
   let service = ctx.env.unwrap::<canter::device::Service>(&this)?;
 
   let message = ctx.get::<JsObject>(0)?;
-  service.send(cf::to_cf_dictionary(message));
+  service.send(cf::to_cf_dictionary(message, &ctx.env));
 
   ctx.env.get_undefined()
 }
