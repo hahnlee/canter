@@ -1,4 +1,4 @@
-# Canter
+# Canter (WIP)
 Canter iOS safari remote debugging helper.
 Developed for safari/webview e2e testing on iPhone.
 Works only on macOS.
@@ -19,8 +19,6 @@ page.goto('https://example.com');
 # Packages
 - `@canter/core`
 - `@canter/connector`
-
-## WIP
 - `@canter/webdriver`
 - `@canter/selenium`
 - `@canter/vscode`
