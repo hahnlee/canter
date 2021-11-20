@@ -2,6 +2,7 @@ import { AMService } from '@canter/connector'
 import { v4 } from 'uuid'
 import {
   ConnectedApplicationsResponse,
+  ForwardGetListingResponse,
   RpcResponse,
   ReportIdentifierResponse,
 } from './types/message'
@@ -56,9 +57,11 @@ export class WIService {
     })
 
     // TODO: (@hahnlee) do not block main thread
-    while (
-      this.service.receive<RpcResponse<any>>().__argument ===
-      '_rpc_applicationConnected:'
-    ) {}
+    let response = this.service.receive<RpcResponse<any>>()
+    while (response.__selector !== '_rpc_applicationSentListing:') {
+      response = this.service.receive<RpcResponse<any>>()
+    }
+
+    return response.__argument as ForwardGetListingResponse
   }
 }

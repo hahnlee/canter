@@ -50,14 +50,16 @@ export function launch({
       application.WIRAutomationAvailabilityKey ===
       'WIRAutomationAvailabilityAvailable'
   )
-  const isAvailable = availableApplications.some(
-    (application) => application.WIRApplicationBundleIdentifierKey === bundle
+  const targetApp = availableApplications.find(
+    (app) => app.WIRApplicationBundleIdentifierKey === bundle
   )
 
-  if (!isAvailable) {
+  if (!targetApp) {
     device.disconnect()
     throw new Error(`Can't connect to (bundle: ${bundle})`)
   }
 
-  wiService.forwardGetListing(bundle)
+  const identifierKey = targetApp.WIRApplicationIdentifierKey
+
+  wiService.forwardGetListing(identifierKey)
 }

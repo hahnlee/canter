@@ -12,6 +12,16 @@ export interface ReportIdentifierResponse {
   WIRAutomationAvailabilityKey: WIRAutomationAvailability
 }
 
+export interface ForwardGetListingResponse {
+  WIRListingKey: Record<string, {
+    WIRTitleKey: string;
+    WIRTypeKey: string;
+    WIRURLKey: string;
+    WIRPageIdentifierKey: number;
+  }>;
+  WIRApplicationIdentifierKey: string;
+}
+
 export interface WIRApplicationDictionaryValue {
   WIRAutomationAvailabilityKey: WIRAutomationAvailability
   WIRIsApplicationActiveKey: number
