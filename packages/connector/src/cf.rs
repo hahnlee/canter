@@ -1,4 +1,4 @@
-use core_foundation::base::{kCFAllocatorDefault, CFGetTypeID, ToVoid};
+use core_foundation::base::{kCFAllocatorDefault, Boolean, CFGetTypeID, CFIndex, CFRange, ToVoid};
 use core_foundation::boolean::{kCFBooleanTrue, CFBooleanGetTypeID, CFBooleanRef};
 use core_foundation::dictionary::{
     kCFTypeDictionaryKeyCallBacks, kCFTypeDictionaryValueCallBacks, CFDictionaryAddValue,
@@ -10,7 +10,8 @@ use core_foundation::number::{
     CFNumberRef,
 };
 use core_foundation::string::{
-    kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringGetTypeID, CFStringRef,
+    kCFStringEncodingUTF8, CFString, CFStringGetBytes, CFStringGetCStringPtr, CFStringGetLength,
+    CFStringGetTypeID, CFStringRef,
 };
 use libc::c_void;
 use napi::{Env, JsBoolean, JsFunction, JsNumber, JsObject, JsString, JsUnknown, ValueType};
@@ -131,10 +132,52 @@ pub fn to_cf_dictionary(object: JsObject, env: &Env) -> CFMutableDictionaryRef {
     dict_ref
 }
 
-fn to_string(string_ref: CFStringRef) -> &'static str {
-    let char_ptr = unsafe { CFStringGetCStringPtr(string_ref, kCFStringEncodingUTF8) };
-    let c_str = unsafe { std::ffi::CStr::from_ptr(char_ptr) };
-    return c_str.to_str().unwrap();
+fn to_string(string_ref: CFStringRef) -> String {
+    // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
+    unsafe {
+        let char_ptr = CFStringGetCStringPtr(string_ref, kCFStringEncodingUTF8);
+        if !char_ptr.is_null() {
+            let c_str = std::ffi::CStr::from_ptr(char_ptr);
+            return String::from(c_str.to_str().unwrap());
+        }
+
+        let char_len = CFStringGetLength(string_ref);
+
+        let mut bytes_required: CFIndex = 0;
+        CFStringGetBytes(
+            string_ref,
+            CFRange {
+                location: 0,
+                length: char_len,
+            },
+            kCFStringEncodingUTF8,
+            0,
+            false as Boolean,
+            std::ptr::null_mut(),
+            0,
+            &mut bytes_required,
+        );
+
+        // Then, allocate the buffer and actually copy.
+        let mut buffer = vec![b'\x00'; bytes_required as usize];
+
+        let mut bytes_used: CFIndex = 0;
+        CFStringGetBytes(
+            string_ref,
+            CFRange {
+                location: 0,
+                length: char_len,
+            },
+            kCFStringEncodingUTF8,
+            0,
+            false as Boolean,
+            buffer.as_mut_ptr(),
+            buffer.len() as CFIndex,
+            &mut bytes_used,
+        );
+
+        return String::from_utf8_unchecked(buffer);
+    }
 }
 
 pub fn from_object(env: &Env, dict_ref: CFDictionaryRef) -> JsObject {
@@ -145,20 +188,20 @@ pub fn from_object(env: &Env, dict_ref: CFDictionaryRef) -> JsObject {
     for i in 0..length {
         let key = to_string(keys[i] as CFStringRef);
         let value = values[i];
-        set_obj(env, &mut obj, key, value);
+        set_obj(env, &mut obj, &key, value);
     }
 
     obj
 }
 
-fn set_obj(env: &Env, obj: &mut JsObject, key: &'static str, value: *const c_void) {
+fn set_obj(env: &Env, obj: &mut JsObject, key: &str, value: *const c_void) {
     let cf_type = unsafe { CFGetTypeID(value) };
 
     let js_key = env.create_string(key).unwrap();
 
     if cf_type == unsafe { CFStringGetTypeID() } {
         let value = to_string(value as CFStringRef);
-        let value = env.create_string(value).unwrap();
+        let value = env.create_string(&value).unwrap();
         obj.set_property(js_key, value).unwrap();
         return;
     }
@@ -172,7 +215,7 @@ fn set_obj(env: &Env, obj: &mut JsObject, key: &'static str, value: *const c_voi
 
         for i in 0..length {
             let value_key = to_string(keys[i] as CFStringRef);
-            set_obj(env, &mut dict, value_key, values[i]);
+            set_obj(env, &mut dict, &value_key, values[i]);
         }
 
         obj.set_property(js_key, dict).unwrap();
