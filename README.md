@@ -23,11 +23,6 @@ page.goto('https://example.com');
 - `@canter/selenium`
 - `@canter/vscode`
 
-# Note
-0.x version will not follow semver.
-- minor version change has breaking changes
-- patch version change has bug fixes and new features 
-
 # License
 ```
 Copyright 2021 Han Lee
