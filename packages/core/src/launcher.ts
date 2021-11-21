@@ -1,5 +1,5 @@
 import { getDevices } from '@canter/connector'
-import { WIService } from '.'
+import { BundleService, WIService } from './services'
 
 export interface LaunchOptions {
   udid?: string
@@ -45,11 +45,7 @@ export function launch({
   }
 
   const applications = wiService.getConnectedApplications()
-  const availableApplications = applications.filter(
-    (application) =>
-      application.WIRAutomationAvailabilityKey ===
-      'WIRAutomationAvailabilityAvailable'
-  )
+  const availableApplications = applications;
   const targetApp = availableApplications.find(
     (app) => app.WIRApplicationBundleIdentifierKey === bundle
   )
@@ -60,6 +56,5 @@ export function launch({
   }
 
   const identifierKey = targetApp.WIRApplicationIdentifierKey
-
-  wiService.forwardGetListing(identifierKey)
+  return new BundleService(wiService, identifierKey)
 }

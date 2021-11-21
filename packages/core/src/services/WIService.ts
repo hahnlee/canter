@@ -5,7 +5,7 @@ import {
   ForwardGetListingResponse,
   RpcResponse,
   ReportIdentifierResponse,
-} from './types/message'
+} from '../types/message'
 
 export class WIService {
   private service: AMService
