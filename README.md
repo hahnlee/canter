@@ -12,7 +12,7 @@ const service = canter.launch({
   bundle: '<app bundle id>', // optional (default com.apple.mobilesafari)
 })
 
-const page = await service.pages()[0];
+const page = service.pages()[0];
 page.goto('https://example.com');
 ```
 
