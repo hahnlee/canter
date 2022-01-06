@@ -6,6 +6,7 @@ import {
   RpcResponse,
   ReportIdentifierResponse,
 } from '../types/message'
+import { bufferToObject } from '../utils/bytes'
 
 export class WIService {
   private service: AMService
@@ -30,7 +31,8 @@ export class WIService {
   }
 
   private receiveMessage<P, T extends string = string>() {
-    return this.service.receive<RpcResponse<P, T>>().__argument
+    const response = this.service.receive<RpcResponse<P, T>>()
+    return response.__argument
   }
 
   reportIdentifier() {
@@ -63,5 +65,62 @@ export class WIService {
     }
 
     return response.__argument as ForwardGetListingResponse
+  }
+
+  forwardIndicateWebView(appId: string, pageId: number, enabled: boolean) {
+    this.sendMessage('_rpc_forwardIndicateWebView:', {
+      WIRConnectionIdentifierKey: this.connectionId,
+      WIRApplicationIdentifierKey: appId,
+      WIRPageIdentifierKey: pageId,
+      WIRIndicateEnabledKey: enabled,
+    })
+  }
+
+  forwardSocketSetup(appId: string, pageId: number, senderId: string) {
+    this.sendMessage('_rpc_forwardSocketSetup:', {
+      WIRConnectionIdentifierKey: this.connectionId,
+      WIRApplicationIdentifierKey: appId,
+      WIRPageIdentifierKey: pageId,
+      WIRSenderKey: senderId,
+    })
+
+    const response = this.receiveMessage<{
+      WIRDestinationKey: string
+      WIRMessageDataKey: ArrayBuffer
+    }>()
+
+    const message = bufferToObject<{
+      method: 'Target.targetCreated'
+      params: { targetInfo: { targetId: string; type: 'page' } }
+    }>(response.WIRMessageDataKey)
+    return message
+  }
+
+  forwardSocketData(
+    appId: string,
+    pageId: number,
+    senderId: string,
+    targetId: string,
+    id: number,
+    message: any
+  ) {
+    this.sendMessage('_rpc_forwardSocketData:', {
+      WIRConnectionIdentifierKey: this.connectionId,
+      WIRApplicationIdentifierKey: appId,
+      WIRPageIdentifierKey: pageId,
+      WIRSenderKey: senderId,
+      WIRSocketDataKey: new TextEncoder().encode(
+        JSON.stringify({
+          method: 'Target.sendMessageToTarget',
+          id,
+          params: {
+            targetId,
+            message: JSON.stringify(message),
+          },
+        })
+      ),
+    })
+
+    this.receiveMessage()
   }
 }

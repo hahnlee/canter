@@ -1,5 +1,10 @@
-use core_foundation::base::{kCFAllocatorDefault, Boolean, CFGetTypeID, CFIndex, CFRange, ToVoid};
+use core_foundation::base::{
+    kCFAllocatorDefault, Boolean, CFGetTypeID, CFIndex, CFRange, CFShow, ToVoid,
+};
 use core_foundation::boolean::{kCFBooleanTrue, CFBooleanGetTypeID, CFBooleanRef};
+use core_foundation::data::{
+    CFDataCreate, CFDataGetBytePtr, CFDataGetLength, CFDataGetTypeID, CFDataRef,
+};
 use core_foundation::dictionary::{
     kCFTypeDictionaryKeyCallBacks, kCFTypeDictionaryValueCallBacks, CFDictionaryAddValue,
     CFDictionaryCreateMutable, CFDictionaryGetCount, CFDictionaryGetKeysAndValues,
@@ -41,6 +46,28 @@ pub fn set_cf_dict(
     };
 
     if object_type == ValueType::Object {
+        if (unknown.is_typedarray().unwrap()) {
+            let object = unknown.coerce_to_object().unwrap();
+            let properties = object.get_property_names().unwrap();
+            let length = properties.get_array_length_unchecked().unwrap();
+            let mut data: Vec<u8> = vec![];
+            for i in 0..length {
+                let elem_value = object.get_element::<JsNumber>(i).unwrap();
+                let value = (elem_value.get_uint32().unwrap() & 0xff) as u8;
+                data.push(value);
+            }
+
+            let cf_data = unsafe {
+                CFDataCreate(kCFAllocatorDefault, data.as_mut_ptr(), data.len() as isize)
+            };
+
+            unsafe {
+                CFDictionaryAddValue(dict_ref, key, cf_data.to_void());
+            }
+
+            return;
+        }
+
         let new_dict_ref = unsafe {
             CFDictionaryCreateMutable(
                 kCFAllocatorDefault,
@@ -245,6 +272,20 @@ fn set_obj(env: &Env, obj: &mut JsObject, key: &str, value: *const c_void) {
                 .unwrap();
             return;
         }
+    }
+
+    if cf_type == unsafe { CFDataGetTypeID() } {
+        let value = value as CFDataRef;
+        let ptr = unsafe { CFDataGetBytePtr(value) };
+        let length = unsafe { CFDataGetLength(value) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, length as usize) };
+        obj.set_property(
+            js_key,
+            env.create_arraybuffer_with_data(slice.to_vec())
+                .unwrap()
+                .into_raw(),
+        )
+        .unwrap()
     }
 }
 

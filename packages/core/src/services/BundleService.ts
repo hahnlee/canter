@@ -15,6 +15,13 @@ export class BundleService {
   pages() {
     const response = this.service.forwardGetListing(this.identifierKey)
     const listing = Object.values(response.WIRListingKey)
-    return listing.map(list => new PageService(list.WIRURLKey))
+    return listing.map(
+      (list) =>
+        new PageService(
+          this.service,
+          this.identifierKey,
+          list.WIRPageIdentifierKey
+        )
+    )
   }
 }
