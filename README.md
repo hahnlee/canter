@@ -1,31 +1,36 @@
 # Canter (WIP)
-(WIP) Mobile safari / webview remote debugging and e2e testing libraries.
-Developed for safari/webview e2e testing on iPhone.
+(WIP) iOS Safari and webview testing library with [playwright](https://playwright.dev/docs/api/class-android) compatible API.
+
 Works only on macOS.
 
 # Usage
 ```ts
-import * as canter from '@canter/core'
+import ios from '@canter/playwright'
 
-const service = canter.launch({
-  udid: '<device udid>', // optional
-  bundle: '<app bundle id>', // optional (default com.apple.mobilesafari)
-})
-
-const page = service.pages()[0];
-page.goto('https://example.com');
+;(async () => {
+  const [device] = await ios.devices()
+  const [webview] = await device.webViews()
+  const page = await webview.page()
+  await page.goto('https://example.com')
+})()
 ```
+
+# Goal
+Provide [playwright android](https://playwright.dev/docs/api/class-android) compatible API.
+
+# Current status
+- Connecting to a iOS device.
+- Connecting to webview or iOS Safari.
+- Navigate webpage
 
 # Packages
 - `@canter/core`
 - `@canter/connector`
-- `@canter/webdriver`
-- `@canter/selenium`
-- `@canter/vscode`
+- `@canter/playwright`
 
 # License
 ```
-Copyright 2021 Han Lee
+Copyright 2021-2022 Han Lee
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

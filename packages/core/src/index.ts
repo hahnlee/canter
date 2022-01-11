@@ -1,5 +1,2 @@
-import { getDevices } from '@canter/connector'
-
+export * from './services'
 export * from './types/message'
-
-export { getDevices }

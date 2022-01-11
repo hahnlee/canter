@@ -31,6 +31,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "reference": "workspace:packages/core"
       },
       {
+        "name": "@canter/playwright",
+        "reference": "workspace:packages/playwright"
+      },
+      {
         "name": "@canter/selenium",
         "reference": "workspace:packages/selenium"
       },
@@ -43,7 +47,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     "ignorePatternData": "(^(?:\\.yarn\\/sdks(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?)|$))$)",
     "fallbackExclusionList": [
       ["@canter/connector", ["workspace:packages/connector"]],
-      ["@canter/core", ["workspace:packages/core"]],
+      ["@canter/core", ["virtual:fcdc3148da8d05dd55a2b9a8bef59f7bc8bbf5b450f9576db32bb7a1d0bf627b339556398accbc26629576450389ea95c124759a7a42a06db1f9a555684bd896#workspace:packages/core", "workspace:packages/core"]],
+      ["@canter/playwright", ["workspace:packages/playwright"]],
       ["@canter/selenium", ["workspace:packages/selenium"]],
       ["@canter/vscode", ["workspace:packages/vscode"]],
       ["canter", ["workspace:."]]
@@ -103,6 +108,24 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@canter/core", [
+        ["virtual:fcdc3148da8d05dd55a2b9a8bef59f7bc8bbf5b450f9576db32bb7a1d0bf627b339556398accbc26629576450389ea95c124759a7a42a06db1f9a555684bd896#workspace:packages/core", {
+          "packageLocation": "./.yarn/__virtual__/@canter-core-virtual-2bb1160171/1/packages/core/",
+          "packageDependencies": [
+            ["@canter/core", "virtual:fcdc3148da8d05dd55a2b9a8bef59f7bc8bbf5b450f9576db32bb7a1d0bf627b339556398accbc26629576450389ea95c124759a7a42a06db1f9a555684bd896#workspace:packages/core"],
+            ["@canter/connector", "workspace:packages/connector"],
+            ["@types/canter__connector", null],
+            ["@types/node", "npm:16.11.0"],
+            ["@types/uuid", "npm:8.3.1"],
+            ["ts-node", "virtual:6196ad266e8c8da219af4c13d4e636aa5850955ff73cff2ee4f9c0145564ee1e0316eb640a1990ecb00dddf23f57d90ed89d29f9c789be40f7c24dd76b8c70ab#npm:10.3.0"],
+            ["typescript", "patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=32657b"],
+            ["uuid", "npm:8.3.2"]
+          ],
+          "packagePeers": [
+            "@canter/connector",
+            "@types/canter__connector"
+          ],
+          "linkType": "SOFT",
+        }],
         ["workspace:packages/core", {
           "packageLocation": "./packages/core/",
           "packageDependencies": [
@@ -113,6 +136,20 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ts-node", "virtual:6196ad266e8c8da219af4c13d4e636aa5850955ff73cff2ee4f9c0145564ee1e0316eb640a1990ecb00dddf23f57d90ed89d29f9c789be40f7c24dd76b8c70ab#npm:10.3.0"],
             ["typescript", "patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=32657b"],
             ["uuid", "npm:8.3.2"]
+          ],
+          "linkType": "SOFT",
+        }]
+      ]],
+      ["@canter/playwright", [
+        ["workspace:packages/playwright", {
+          "packageLocation": "./packages/playwright/",
+          "packageDependencies": [
+            ["@canter/playwright", "workspace:packages/playwright"],
+            ["@canter/connector", "workspace:packages/connector"],
+            ["@canter/core", "virtual:fcdc3148da8d05dd55a2b9a8bef59f7bc8bbf5b450f9576db32bb7a1d0bf627b339556398accbc26629576450389ea95c124759a7a42a06db1f9a555684bd896#workspace:packages/core"],
+            ["@types/node", "npm:16.11.0"],
+            ["ts-node", "virtual:6196ad266e8c8da219af4c13d4e636aa5850955ff73cff2ee4f9c0145564ee1e0316eb640a1990ecb00dddf23f57d90ed89d29f9c789be40f7c24dd76b8c70ab#npm:10.3.0"],
+            ["typescript", "patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=32657b"]
           ],
           "linkType": "SOFT",
         }]
