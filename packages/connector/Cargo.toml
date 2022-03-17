@@ -2,7 +2,7 @@
 authors = ["Han Lee <hanlee.dev@gmail.com>"]
 name = "canter-connector"
 version = "0.0.1"
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,8 +13,8 @@ crate-type = ["cdylib"]
 canter = { path = "../.." }
 core-foundation = "0.9"
 libc = "0.2"
-napi = "1"
-napi-derive = "1"
+napi = "2"
+napi-derive = "2"
 
 [build-dependencies]
 napi-build = "1"

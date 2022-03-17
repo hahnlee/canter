@@ -1,113 +1,76 @@
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, JsObject, JsString, JsUndefined, Property, Result};
+use napi::{Env, JsObject};
 
 mod cf;
 
-#[module_exports]
-fn init(mut exports: JsObject) -> Result<()> {
-  exports.create_named_method("getDevices", get_devices)?;
-  Ok(())
-}
-
-#[js_function]
-fn get_devices(ctx: CallContext) -> Result<JsObject> {
+#[napi]
+fn get_devices() -> Vec<AMDevice> {
   let devices = canter::device::get_devices(0.25);
 
-  let device_class = ctx.env.define_class(
-    "Device",
-    device_constructor,
-    &vec![
-      Property::new(ctx.env, "connect")?.with_method(connect),
-      Property::new(ctx.env, "disconnect")?.with_method(disconnect),
-      Property::new(ctx.env, "startService")?.with_method(start_service),
-    ],
-  )?;
+  let mut array = Vec::<AMDevice>::new();
 
-  let mut array = ctx.env.create_array_with_length(devices.len())?;
-
-  for (index, device) in devices.into_iter().enumerate() {
-    let arguments: Vec<JsUndefined> = vec![];
-    let mut instance = device_class.new(&arguments)?;
-    instance.set_named_property("udid", ctx.env.create_string(&device.get_udid())?)?;
-    ctx.env.wrap(&mut instance, device)?;
-    array.set_element(index as u32, instance)?;
+  for device in devices {
+    array.push(AMDevice::new(device));
   }
 
-  Ok(array)
+  array
 }
 
-#[js_function(1)]
-fn device_constructor(ctx: CallContext) -> Result<JsUndefined> {
-  ctx.env.get_undefined()
+#[napi]
+struct AMDevice {
+  device: canter::device::Device<'static>,
 }
 
-#[js_function(2)]
-fn connect(ctx: CallContext) -> Result<JsUndefined> {
-  let this = ctx.this_unchecked::<JsObject>();
-  let device = ctx.env.unwrap::<canter::device::Device>(&this)?;
+#[napi]
+impl AMDevice {
+  pub fn new(device: canter::device::Device<'static>) -> AMDevice {
+    AMDevice { device: device }
+  }
 
-  device.connect();
+  #[napi(getter)]
+  pub fn udid(&self) -> String {
+    self.device.get_udid()
+  }
 
-  ctx.env.get_undefined()
+  #[napi]
+  pub fn connect(&mut self) {
+    self.device.connect();
+  }
+
+  #[napi]
+  pub fn disconnect(&mut self) {
+    self.device.disconnect();
+  }
+
+  #[napi]
+  pub fn start_service(&mut self, service_name: String) -> AMService {
+    let service = self.device.start_service(&service_name);
+    let am_service = AMService::new(service);
+    am_service
+  }
 }
 
-#[js_function(2)]
-fn disconnect(ctx: CallContext) -> Result<JsUndefined> {
-  let this = ctx.this_unchecked::<JsObject>();
-  let device = ctx.env.unwrap::<canter::device::Device>(&this)?;
-
-  device.disconnect();
-
-  ctx.env.get_undefined()
+#[napi]
+struct AMService {
+  service: canter::device::Service,
 }
 
-#[js_function(2)]
-fn start_service(ctx: CallContext) -> Result<JsObject> {
-  let this = ctx.this_unchecked::<JsObject>();
-  let device = ctx.env.unwrap::<canter::device::Device>(&this)?;
+#[napi]
+impl AMService {
+  pub fn new(service: canter::device::Service) -> AMService {
+    AMService { service: service }
+  }
 
-  let service = device.start_service(ctx.get::<JsString>(0)?.into_utf8()?.as_str()?);
+  #[napi]
+  pub fn send(&mut self, env: Env, message: JsObject) {
+    self.service.send(cf::to_cf_dictionary(message, &env));
+  }
 
-  let service_class = ctx.env.define_class(
-    "Service",
-    service_constructor,
-    &vec![
-      Property::new(ctx.env, "send")?.with_method(send),
-      Property::new(ctx.env, "receive")?.with_method(receive),
-    ],
-  )?;
-
-  let arguments: Vec<JsUndefined> = vec![];
-  let mut instance = service_class.new(&arguments)?;
-  ctx.env.wrap(&mut instance, service)?;
-
-  Ok(instance)
-}
-
-#[js_function(1)]
-fn service_constructor(ctx: CallContext) -> Result<JsUndefined> {
-  ctx.env.get_undefined()
-}
-
-#[js_function(1)]
-fn send(ctx: CallContext) -> Result<JsUndefined> {
-  let this = ctx.this_unchecked::<JsObject>();
-  let service = ctx.env.unwrap::<canter::device::Service>(&this)?;
-
-  let message = ctx.get::<JsObject>(0)?;
-  service.send(cf::to_cf_dictionary(message, &ctx.env));
-
-  ctx.env.get_undefined()
-}
-
-#[js_function(1)]
-fn receive(ctx: CallContext) -> Result<JsObject> {
-  let this = ctx.this_unchecked::<JsObject>();
-  let service = ctx.env.unwrap::<canter::device::Service>(&this)?;
-
-  let obj = cf::from_object(ctx.env, service.receive());
-
-  Ok(obj)
+  #[napi]
+  pub fn receive(&mut self, env: Env) -> JsObject {
+    let message = cf::from_object(&env, self.service.receive());
+    message
+  }
 }

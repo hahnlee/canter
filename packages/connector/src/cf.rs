@@ -1,5 +1,5 @@
 use core_foundation::base::{
-    kCFAllocatorDefault, Boolean, CFGetTypeID, CFIndex, CFRange, CFShow, ToVoid,
+    kCFAllocatorDefault, Boolean, CFGetTypeID, CFIndex, CFRange, ToVoid,
 };
 use core_foundation::boolean::{kCFBooleanTrue, CFBooleanGetTypeID, CFBooleanRef};
 use core_foundation::data::{
@@ -46,7 +46,7 @@ pub fn set_cf_dict(
     };
 
     if object_type == ValueType::Object {
-        if (unknown.is_typedarray().unwrap()) {
+        if unknown.is_typedarray().unwrap() {
             let object = unknown.coerce_to_object().unwrap();
             let properties = object.get_property_names().unwrap();
             let length = properties.get_array_length_unchecked().unwrap();
