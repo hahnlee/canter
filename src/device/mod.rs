@@ -108,6 +108,12 @@ impl Device<'_> {
     }
 }
 
+impl Drop for Device<'_> {
+    fn drop(&mut self) {
+        self.disconnect();
+    }
+}
+
 pub struct Service {
     service_ptr: bridge::AMDServiceConnectionRef,
 }
