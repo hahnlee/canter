@@ -7,7 +7,7 @@ export class IOSWebView {
   constructor(service: PageService) {
     this.service = service
   }
-
+  
   page = async () => {
     return new Page(this.service)
   }

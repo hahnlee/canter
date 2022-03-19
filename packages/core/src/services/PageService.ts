@@ -18,27 +18,29 @@ export class PageService {
     this.service = service
     this.bundleIdentifierKey = bundleIdentifierKey
     this.pageIdentifierKey = pageIdentifierKey
-    this.goto = this.goto.bind(this)
   }
 
-  private initialize() {
+  private initialize = async () => {
     this.service.forwardIndicateWebView(
       this.bundleIdentifierKey,
       this.pageIdentifierKey,
       true
     )
-    this.targetId = this.service.forwardSocketSetup(
+
+    const response = await this.service.forwardSocketSetup(
       this.bundleIdentifierKey,
       this.pageIdentifierKey,
       this.connectionId
-    ).params.targetInfo.targetId
+    )
+
+    this.targetId = response.params.targetInfo.targetId
 
     this.sendMessage('Inspector.enable')
     this.sendMessage('Page.enable')
     this.initialized = true
   }
 
-  private sendMessage(method: string, params?: any) {
+  private sendMessage = async (method: string, params?: any) => {
     this.service.forwardSocketData(
       this.bundleIdentifierKey,
       this.pageIdentifierKey,
@@ -55,9 +57,9 @@ export class PageService {
     this.id = this.id + 1
   }
 
-  goto(url: string) {
+  goto = async (url: string) => {
     if (!this.initialized) {
-      this.initialize()
+      await this.initialize()
     }
 
     this.sendMessage('Page.navigate', {

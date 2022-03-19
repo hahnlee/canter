@@ -7,7 +7,7 @@ export class Page {
     this.service = service
   }
 
-  async goto(url: string) {
-    this.service.goto(url)
+  goto(url: string) {
+    return this.service.goto(url)
   }
 }

@@ -4,6 +4,8 @@ import {
   ConnectedApplicationsResponse,
   ForwardGetListingResponse,
   RpcResponse,
+  RpcResponseCallback,
+  RpcResponseMatcher,
   ReportIdentifierResponse,
 } from '../types/message'
 import { bufferToObject } from '../utils/bytes'
@@ -13,61 +15,84 @@ export class WIService {
 
   private connectionId: string
 
+  private callbacks: Set<RpcResponseCallback<any>> = new Set()
+
   constructor(service: AMService) {
     this.service = service
     this.connectionId = v4()
-
-    this.sendMessage.bind(this)
-    this.receiveMessage.bind(this)
-    this.getConnectedApplications.bind(this)
-    this.forwardGetListing.bind(this)
+    service.registerReceiveListener(this.receiveMessage)
   }
 
-  private sendMessage(name: string, params: unknown) {
+  private sendMessage = (name: string, params: unknown) => {
     this.service.send({
       __selector: name,
       __argument: params,
     })
   }
 
-  private receiveMessage<P, T extends string = string>() {
-    const response = this.service.receive<RpcResponse<P, T>>()
-    return response.__argument
+  private receiveMessage = (message: RpcResponse<any>) => {
+    this.callbacks.forEach((callback) => {
+      callback(message)
+    })
   }
 
-  reportIdentifier() {
+  private waitUntilResponse = <P>(matcher: RpcResponseMatcher) => {
+    return new Promise<RpcResponse<P>>((resolve) => {
+      const handler = (response: RpcResponse<any>) => {
+        if (matcher(response)) {
+          this.callbacks.delete(handler)
+          resolve(response)
+        }
+      }
+
+      this.callbacks.add(handler)
+    })
+  }
+
+  reportIdentifier = async () => {
     this.sendMessage('_rpc_reportIdentifier:', {
       WIRConnectionIdentifierKey: this.connectionId,
     })
 
-    return this.receiveMessage<ReportIdentifierResponse>()
+    const response = await this.waitUntilResponse<ReportIdentifierResponse>(
+      (message) => message.__selector === '_rpc_reportCurrentState:'
+    )
+
+    return response
   }
 
-  getConnectedApplications() {
+  getConnectedApplications = async () => {
     this.sendMessage('_rpc_getConnectedApplications:', {
       WIRConnectionIdentifierKey: this.connectionId,
     })
 
-    const response = this.receiveMessage<ConnectedApplicationsResponse>()
-    return Object.values(response.WIRApplicationDictionaryKey).flat()
+    const response =
+      await this.waitUntilResponse<ConnectedApplicationsResponse>(
+        (message) =>
+          message.__selector === '_rpc_reportConnectedApplicationList:'
+      )
+
+    return Object.values(response.__argument.WIRApplicationDictionaryKey).flat()
   }
 
-  forwardGetListing(bundle: string) {
+  forwardGetListing = async (bundle: string) => {
     this.sendMessage('_rpc_forwardGetListing:', {
       WIRConnectionIdentifierKey: this.connectionId,
       WIRApplicationIdentifierKey: bundle,
     })
 
-    // TODO: (@hahnlee) do not block main thread
-    let response = this.service.receive<RpcResponse<any>>()
-    while (response.__selector !== '_rpc_applicationSentListing:') {
-      response = this.service.receive<RpcResponse<any>>()
-    }
+    const response = await this.waitUntilResponse<ForwardGetListingResponse>(
+      (message) => message.__selector === '_rpc_applicationSentListing:'
+    )
 
-    return response.__argument as ForwardGetListingResponse
+    return response.__argument
   }
 
-  forwardIndicateWebView(appId: string, pageId: number, enabled: boolean) {
+  forwardIndicateWebView = (
+    appId: string,
+    pageId: number,
+    enabled: boolean
+  ) => {
     this.sendMessage('_rpc_forwardIndicateWebView:', {
       WIRConnectionIdentifierKey: this.connectionId,
       WIRApplicationIdentifierKey: appId,
@@ -76,7 +101,11 @@ export class WIService {
     })
   }
 
-  forwardSocketSetup(appId: string, pageId: number, senderId: string) {
+  forwardSocketSetup = async (
+    appId: string,
+    pageId: number,
+    senderId: string
+  ) => {
     this.sendMessage('_rpc_forwardSocketSetup:', {
       WIRConnectionIdentifierKey: this.connectionId,
       WIRApplicationIdentifierKey: appId,
@@ -84,26 +113,33 @@ export class WIService {
       WIRSenderKey: senderId,
     })
 
-    const response = this.receiveMessage<{
+    const response = await this.waitUntilResponse<{
       WIRDestinationKey: string
       WIRMessageDataKey: ArrayBuffer
-    }>()
+    }>((message) => {
+      if (message.__selector !== '_rpc_applicationSentData:') {
+        return false
+      }
+
+      return message.__argument.WIRDestinationKey === senderId
+    })
 
     const message = bufferToObject<{
       method: 'Target.targetCreated'
       params: { targetInfo: { targetId: string; type: 'page' } }
-    }>(response.WIRMessageDataKey)
+    }>(response.__argument.WIRMessageDataKey)
+
     return message
   }
 
-  forwardSocketData(
+  forwardSocketData = (
     appId: string,
     pageId: number,
     senderId: string,
     targetId: string,
     id: number,
     message: any
-  ) {
+  ) => {
     this.sendMessage('_rpc_forwardSocketData:', {
       WIRConnectionIdentifierKey: this.connectionId,
       WIRApplicationIdentifierKey: appId,
@@ -121,6 +157,6 @@ export class WIService {
       ),
     })
 
-    this.receiveMessage()
+    // this.receiveMessage()
   }
 }

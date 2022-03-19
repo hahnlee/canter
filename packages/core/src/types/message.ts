@@ -3,6 +3,12 @@ export interface RpcResponse<P, T extends string = string> {
   __argument: P
 }
 
+export type RpcResponseCallback<P, T extends string = string> = (
+  message: RpcResponse<P, T>
+) => void
+
+export type RpcResponseMatcher = (message: RpcResponse<any>) => boolean
+
 export type WIRAutomationAvailability =
   | 'WIRAutomationAvailabilityNotAvailable'
   | 'WIRAutomationAvailabilityUnknown'
@@ -13,13 +19,16 @@ export interface ReportIdentifierResponse {
 }
 
 export interface ForwardGetListingResponse {
-  WIRListingKey: Record<string, {
-    WIRTitleKey: string;
-    WIRTypeKey: string;
-    WIRURLKey: string;
-    WIRPageIdentifierKey: number;
-  }>;
-  WIRApplicationIdentifierKey: string;
+  WIRListingKey: Record<
+    string,
+    {
+      WIRTitleKey: string
+      WIRTypeKey: string
+      WIRURLKey: string
+      WIRPageIdentifierKey: number
+    }
+  >
+  WIRApplicationIdentifierKey: string
 }
 
 export interface WIRApplicationDictionaryValue {

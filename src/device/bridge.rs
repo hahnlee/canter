@@ -36,6 +36,7 @@ pub struct am_device_notification {
     pub cookie: c_uint,
 }
 
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct amd_service_connection {
     pub unknown: [u8; 16],
@@ -46,6 +47,9 @@ pub struct amd_service_connection {
     pub device_connection_id: u32,
     pub service_name: [c_char; 128],
 }
+
+unsafe impl Send for amd_service_connection {}
+unsafe impl Sync for amd_service_connection {}
 
 pub type AMDServiceConnectionRef = *const amd_service_connection;
 
