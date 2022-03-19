@@ -1,11 +1,13 @@
 #[macro_use]
 extern crate napi_derive;
 
+use canter::device::bridge::AMDServiceConnectionRef;
 use core_foundation::dictionary::CFDictionaryRef;
 use napi::threadsafe_function::{
   ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction, ThreadsafeFunctionCallMode,
 };
 use napi::{Env, JsFunction, JsObject};
+use std::sync::Arc;
 use std::thread;
 
 mod cf;
@@ -58,12 +60,12 @@ impl AMDevice {
 
 #[napi]
 pub struct AMService {
-  connection_ref: canter::device::bridge::AMDServiceConnectionRef,
+  connection_ref: AMDServiceConnectionRef,
 }
 
 #[napi]
 impl AMService {
-  pub fn new(connection_ref: canter::device::bridge::AMDServiceConnectionRef) -> AMService {
+  pub fn new(connection_ref: AMDServiceConnectionRef) -> AMService {
     AMService {
       connection_ref: connection_ref,
     }
@@ -82,16 +84,12 @@ impl AMService {
       })
       .unwrap();
 
-    let ptr = unsafe {
-      std::sync::Arc::new(*self.connection_ref)
-    };
+    let ptr = unsafe { Arc::new(*self.connection_ref) };
 
-    thread::spawn(move || {
-      loop {
-        let item = std::sync::Arc::clone(&ptr);
-        let message = canter::device::receive_message(std::sync::Arc::into_raw(item));
-        tsfn.call(message, ThreadsafeFunctionCallMode::Blocking);
-      }
+    thread::spawn(move || loop {
+      let item = Arc::clone(&ptr);
+      let message = canter::device::receive_message(Arc::into_raw(item));
+      tsfn.call(message, ThreadsafeFunctionCallMode::Blocking);
     });
   }
 }
