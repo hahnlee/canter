@@ -9,6 +9,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+latest = ["napi/napi8"]
+
 [dependencies]
 canter = { path = "../.." }
 core-foundation = "0.9"

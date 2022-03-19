@@ -1,6 +1,4 @@
-mod bridge;
-
-use std::fmt;
+pub mod bridge;
 
 use core_foundation::base::{Boolean, CFRelease, CFTypeRef, ToVoid};
 use core_foundation::dictionary::CFDictionaryRef;
@@ -10,7 +8,30 @@ use core_foundation::string::{
     kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringRef,
 };
 
-fn get_device_udid(device: &bridge::am_device) -> String {
+extern "C" fn handle_am_device_notification(
+    target: *const bridge::AMDeviceNotificationCallbackInfo,
+    args: *mut libc::c_void,
+) {
+    let manager = args as *mut Vec<&bridge::AMDevice>;
+    let device = unsafe { &*(*target).dev };
+    unsafe {
+        (*manager).push(device);
+    }
+}
+
+pub fn get_devices(timeout: f64) -> Vec<&'static bridge::AMDevice> {
+    let mut devices = Vec::new();
+
+    unsafe {
+        let devices_ptr: *mut libc::c_void = &mut devices as *mut _ as *mut libc::c_void;
+        bridge::AMDeviceNotificationSubscribe(handle_am_device_notification, 0, 0, devices_ptr);
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, false as Boolean);
+    }
+
+    return devices;
+}
+
+pub fn get_udid(device: &bridge::AMDevice) -> String {
     let char_ptr = unsafe {
         let ns_uuid = bridge::AMDeviceCopyDeviceIdentifier(device);
         let c_str_ptr = CFStringGetCStringPtr(ns_uuid, kCFStringEncodingUTF8);
@@ -21,180 +42,105 @@ fn get_device_udid(device: &bridge::am_device) -> String {
     return String::from(c_str.to_str().unwrap());
 }
 
-extern "C" fn handle_am_device_notification(
-    target: *const bridge::am_device_notification_callback_info,
-    args: *mut libc::c_void,
-) {
-    let manager = args as *mut Vec<Device>;
-    let device = unsafe { &*(*target).dev };
+pub fn pair(device: &bridge::AMDevice) {
+    let is_paired = unsafe { bridge::AMDeviceIsPaired(device) };
+    if is_paired != 1 {
+        let pair_result = unsafe { bridge::AMDevicePair(device) };
+        if pair_result != 0 {
+            panic!("device locked");
+        }
+    }
+
+    let is_valid = unsafe { bridge::AMDeviceValidatePairing(device) };
+
+    if is_valid != 0 {
+        panic!("validation failed");
+    }
+}
+
+pub fn connect(device: &bridge::AMDevice) {
+    let result = unsafe { bridge::AMDeviceConnect(device) };
+    if result != 0 {
+        panic!("not connected");
+    }
+
+    pair(device);
+
+    let session_result = unsafe { bridge::AMDeviceStartSession(device) };
+    if session_result != 0 {
+        panic!("couldn't start session");
+    }
+}
+
+pub fn disconnect(device: &bridge::AMDevice) {
     unsafe {
-        (*manager).push(Device::new(device));
-    }
+        bridge::AMDeviceStopSession(device);
+        bridge::AMDeviceDisconnect(device);
+    };
 }
 
-pub struct Device<'a> {
-    am_device: &'a bridge::am_device,
-    pub connected: bool,
-}
+pub fn start_service(
+    device: &bridge::AMDevice,
+    service_name: &str,
+) -> bridge::AMDServiceConnectionRef {
+    unsafe {
+        let ns_service_name = CFString::new(&service_name);
+        let ns_service_name = ns_service_name.to_void() as CFStringRef;
 
-impl Device<'_> {
-    pub fn new(am_device: &bridge::am_device) -> Device {
-        Device {
-            am_device: am_device,
-            connected: false,
-        }
-    }
-
-    pub fn get_udid(&self) -> String {
-        get_device_udid(&self.am_device)
-    }
-
-    fn pair(&self) {
-        let is_paired = unsafe { bridge::AMDeviceIsPaired(self.am_device) };
-        if is_paired != 1 {
-            let pair_result = unsafe { bridge::AMDevicePair(self.am_device) };
-            if pair_result != 0 {
-                panic!("device locked");
-            }
-        }
-
-        let is_valid = unsafe { bridge::AMDeviceValidatePairing(self.am_device) };
-
-        if is_valid != 0 {
-            panic!("validation failed");
-        }
-    }
-
-    pub fn connect(&mut self) {
-        if self.connected {
-            return;
-        }
-
-        let result = unsafe { bridge::AMDeviceConnect(self.am_device) };
-        if result != 0 {
-            panic!("not connected");
-        }
-
-        self.pair();
-
-        let session_result = unsafe { bridge::AMDeviceStartSession(self.am_device) };
-        if session_result != 0 {
-            panic!("couldn't start session");
-        }
-
-        self.connected = true;
-    }
-
-    pub fn disconnect(&mut self) {
-        if !self.connected {
-            return;
-        }
-
-        unsafe {
-            bridge::AMDeviceStopSession(self.am_device);
-            bridge::AMDeviceDisconnect(self.am_device);
-        };
-
-        self.connected = false;
-    }
-
-    // TODO: use session trait
-    pub fn start_service(&self, service_name: &str) -> Service {
-        if !self.connected {
-            panic!("device not connected");
-        }
-
-        return Service::new(&self.am_device, &service_name);
-    }
-}
-
-impl Drop for Device<'_> {
-    fn drop(&mut self) {
-        self.disconnect();
-    }
-}
-
-pub struct Service {
-    service_ptr: bridge::AMDServiceConnectionRef,
-}
-
-impl Service {
-    pub fn new(am_device: &bridge::am_device, service_name: &str) -> Service {
-        unsafe {
-            let ns_service_name = CFString::new(&service_name);
-            let ns_service_name = ns_service_name.to_void() as CFStringRef;
-
-            let service_ptr: bridge::AMDServiceConnectionRef = std::ptr::null_mut();
-
-            let result = bridge::AMDeviceSecureStartService(
-                am_device,
-                ns_service_name,
-                std::ptr::null_mut(),
-                &service_ptr,
-            );
-
-            if result != 0 {
-                panic!("couldn't start service {}", result);
-            }
-
-            return Service {
-                service_ptr: service_ptr,
-            };
-        }
-    }
-
-    pub fn send(&self, message: CFDictionaryRef) {
-        let result = unsafe {
-            bridge::AMDServiceConnectionSendMessage(
-                self.service_ptr,
-                message,
-                kCFPropertyListBinaryFormat_v1_0,
-            )
-        };
+        let service_ptr: bridge::AMDServiceConnectionRef = std::ptr::null_mut();
+        let result = bridge::AMDeviceSecureStartService(
+            device,
+            ns_service_name,
+            std::ptr::null_mut(),
+            &service_ptr,
+        );
 
         if result != 0 {
-            panic!("couldn't send message {}", result);
+            panic!("couldn't start service {}", result);
         }
-    }
 
-    pub fn receive(&self) -> CFDictionaryRef {
-        unsafe {
-            let response: CFDictionaryRef = std::ptr::null_mut();
-            let res = bridge::AMDServiceConnectionReceiveMessage(
-                self.service_ptr,
-                &response,
-                std::ptr::null(),
-                std::ptr::null(),
-                std::ptr::null(),
-                std::ptr::null(),
-            );
-
-            if res != 0 {
-                panic!("couldn't receive response");
-            }
-
-            response
-        }
+        service_ptr
     }
 }
 
-impl fmt::Debug for Device<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Device")
-            .field("udid", &self.get_udid())
-            .field("connected", &self.connected)
-            .finish()
+pub fn send_message(connection_ref: bridge::AMDServiceConnectionRef, message: CFDictionaryRef) {
+    let result = unsafe {
+        bridge::AMDServiceConnectionSendMessage(
+            connection_ref,
+            message,
+            kCFPropertyListBinaryFormat_v1_0,
+        )
+    };
+
+    if result != 0 {
+        panic!("couldn't send message {}", result);
     }
 }
 
-pub fn get_devices(timeout: f64) -> Vec<Device<'static>> {
-    let mut devices = Vec::new();
-
+pub fn invalidate_connection(connection_ref: bridge::AMDServiceConnectionRef) {
     unsafe {
-        let devices_ptr: *mut libc::c_void = &mut devices as *mut _ as *mut libc::c_void;
-        bridge::AMDeviceNotificationSubscribe(handle_am_device_notification, 0, 0, devices_ptr);
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, false as Boolean);
-    }
+        bridge::AMDServiceConnectionInvalidate(connection_ref);
+    };
+}
 
-    return devices;
+pub fn receive_message(
+    connection_ref: bridge::AMDServiceConnectionRef,
+) -> Result<CFDictionaryRef, i32> {
+    unsafe {
+        let response: CFDictionaryRef = std::ptr::null_mut();
+        let code = bridge::AMDServiceConnectionReceiveMessage(
+            connection_ref,
+            &response,
+            std::ptr::null(),
+            std::ptr::null(),
+            std::ptr::null(),
+            std::ptr::null(),
+        );
+
+        if code != 0 {
+            return Err(code);
+        }
+
+        return Ok(response);
+    }
 }

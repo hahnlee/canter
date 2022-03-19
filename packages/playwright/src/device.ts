@@ -11,30 +11,31 @@ export class IOSDevice {
   }
 
   webViews = async () => {
-    // FIXME: (@hahnlee) use connected state
     this.device.connect()
 
     const service = this.device.startService('com.apple.webinspector')
     const wiService = new WIService(service)
 
-    wiService.reportIdentifier()
+    await wiService.reportIdentifier()
 
-    const applications = wiService
-      .getConnectedApplications()
+    const applications = await wiService.getConnectedApplications()
+
+    const bundles = applications
       .filter(
         (app) =>
           app.WIRApplicationBundleIdentifierKey !== 'com.apple.mobile.lockdownd'
       )
-
-    return applications.flatMap((app) => {
-      const bundleService = new BundleService(
+      .flatMap((app) => new BundleService(
         wiService,
         app.WIRApplicationIdentifierKey
-      )
+      ))
 
-      const pages = bundleService.pages()
-      return pages.map((page) => new IOSWebView(page))
-    })
+      const pages = await Promise.all(bundles.map(async bundle => {
+        const pages = await bundle.pages()
+        return pages.map((page) => new IOSWebView(page))
+      }))
+
+      return pages.flat()
   }
 
   close = async () => {
