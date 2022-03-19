@@ -25,12 +25,12 @@ fn get_devices() -> Vec<AMDevice> {
 
 #[napi]
 struct AMDevice {
-  device: &'static canter::device::bridge::am_device,
+  device: &'static canter::device::bridge::AMDevice,
 }
 
 #[napi]
 impl AMDevice {
-  pub fn new(device: &'static canter::device::bridge::am_device) -> AMDevice {
+  pub fn new(device: &'static canter::device::bridge::AMDevice) -> AMDevice {
     AMDevice { device: device }
   }
 

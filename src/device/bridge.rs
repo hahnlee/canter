@@ -5,7 +5,7 @@ use core_foundation::string::CFStringRef;
 use libc::{c_char, c_uchar, c_uint, c_void};
 
 #[repr(C)]
-pub struct am_device {
+pub struct AMDevice {
     pub unknown0: [c_uchar; 16],
     pub device_id: c_uint,
     pub product_id: c_uint,
@@ -20,15 +20,15 @@ pub struct am_device {
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct am_device_notification_callback_info {
-    pub dev: *mut am_device,
+pub struct AMDeviceNotificationCallbackInfo {
+    pub dev: *mut AMDevice,
     pub msg: c_uint,
-    pub subscription: *mut am_device_notification,
+    pub subscription: *mut AMDeviceNotification,
 }
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct am_device_notification {
+pub struct AMDeviceNotification {
     pub unknown0: c_uint,
     pub unknown1: c_uint,
     pub unknown2: c_uint,
@@ -54,7 +54,7 @@ unsafe impl Sync for amd_service_connection {}
 pub type AMDServiceConnectionRef = *const amd_service_connection;
 
 type AMDeviceNotificationCallback =
-    extern "C" fn(_: *const am_device_notification_callback_info, _: *mut c_void);
+    extern "C" fn(_: *const AMDeviceNotificationCallbackInfo, _: *mut c_void);
 
 extern "C" {
     pub fn AMDeviceNotificationSubscribe(
@@ -63,16 +63,16 @@ extern "C" {
         unknown2: i32,
         manager: *mut c_void,
     );
-    pub fn AMDeviceCopyDeviceIdentifier(device: *const am_device) -> CFStringRef;
-    pub fn AMDeviceConnect(device: *const am_device) -> i32;
-    pub fn AMDeviceIsPaired(device: *const am_device) -> i32;
-    pub fn AMDevicePair(device: *const am_device) -> i32;
-    pub fn AMDeviceValidatePairing(device: *const am_device) -> i32;
-    pub fn AMDeviceStartSession(device: *const am_device) -> i32;
-    pub fn AMDeviceStopSession(device: *const am_device) -> i32;
-    pub fn AMDeviceDisconnect(device: *const am_device) -> i32;
+    pub fn AMDeviceCopyDeviceIdentifier(device: *const AMDevice) -> CFStringRef;
+    pub fn AMDeviceConnect(device: *const AMDevice) -> i32;
+    pub fn AMDeviceIsPaired(device: *const AMDevice) -> i32;
+    pub fn AMDevicePair(device: *const AMDevice) -> i32;
+    pub fn AMDeviceValidatePairing(device: *const AMDevice) -> i32;
+    pub fn AMDeviceStartSession(device: *const AMDevice) -> i32;
+    pub fn AMDeviceStopSession(device: *const AMDevice) -> i32;
+    pub fn AMDeviceDisconnect(device: *const AMDevice) -> i32;
     pub fn AMDeviceSecureStartService(
-        device: *const am_device,
+        device: *const AMDevice,
         service_name: CFStringRef,
         options: CFDictionaryRef,
         service_connection: *const AMDServiceConnectionRef,

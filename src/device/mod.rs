@@ -9,17 +9,17 @@ use core_foundation::string::{
 };
 
 extern "C" fn handle_am_device_notification(
-    target: *const bridge::am_device_notification_callback_info,
+    target: *const bridge::AMDeviceNotificationCallbackInfo,
     args: *mut libc::c_void,
 ) {
-    let manager = args as *mut Vec<&bridge::am_device>;
+    let manager = args as *mut Vec<&bridge::AMDevice>;
     let device = unsafe { &*(*target).dev };
     unsafe {
         (*manager).push(device);
     }
 }
 
-pub fn get_devices(timeout: f64) -> Vec<&'static bridge::am_device> {
+pub fn get_devices(timeout: f64) -> Vec<&'static bridge::AMDevice> {
     let mut devices = Vec::new();
 
     unsafe {
@@ -31,7 +31,7 @@ pub fn get_devices(timeout: f64) -> Vec<&'static bridge::am_device> {
     return devices;
 }
 
-pub fn get_udid(device: &bridge::am_device) -> String {
+pub fn get_udid(device: &bridge::AMDevice) -> String {
     let char_ptr = unsafe {
         let ns_uuid = bridge::AMDeviceCopyDeviceIdentifier(device);
         let c_str_ptr = CFStringGetCStringPtr(ns_uuid, kCFStringEncodingUTF8);
@@ -42,7 +42,7 @@ pub fn get_udid(device: &bridge::am_device) -> String {
     return String::from(c_str.to_str().unwrap());
 }
 
-pub fn pair(device: &bridge::am_device) {
+pub fn pair(device: &bridge::AMDevice) {
     let is_paired = unsafe { bridge::AMDeviceIsPaired(device) };
     if is_paired != 1 {
         let pair_result = unsafe { bridge::AMDevicePair(device) };
@@ -58,7 +58,7 @@ pub fn pair(device: &bridge::am_device) {
     }
 }
 
-pub fn connect(device: &bridge::am_device) {
+pub fn connect(device: &bridge::AMDevice) {
     let result = unsafe { bridge::AMDeviceConnect(device) };
     if result != 0 {
         panic!("not connected");
@@ -72,7 +72,7 @@ pub fn connect(device: &bridge::am_device) {
     }
 }
 
-pub fn disconnect(device: &bridge::am_device) {
+pub fn disconnect(device: &bridge::AMDevice) {
     unsafe {
         bridge::AMDeviceStopSession(device);
         bridge::AMDeviceDisconnect(device);
@@ -80,7 +80,7 @@ pub fn disconnect(device: &bridge::am_device) {
 }
 
 pub fn start_service(
-    device: &bridge::am_device,
+    device: &bridge::AMDevice,
     service_name: &str,
 ) -> bridge::AMDServiceConnectionRef {
     unsafe {
