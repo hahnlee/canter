@@ -117,10 +117,18 @@ pub fn send_message(connection_ref: bridge::AMDServiceConnectionRef, message: CF
     }
 }
 
-pub fn receive_message(connection_ref: bridge::AMDServiceConnectionRef) -> CFDictionaryRef {
+pub fn invalidate_connection(connection_ref: bridge::AMDServiceConnectionRef) {
+    unsafe {
+        bridge::AMDServiceConnectionInvalidate(connection_ref);
+    };
+}
+
+pub fn receive_message(
+    connection_ref: bridge::AMDServiceConnectionRef,
+) -> Result<CFDictionaryRef, i32> {
     unsafe {
         let response: CFDictionaryRef = std::ptr::null_mut();
-        let res = bridge::AMDServiceConnectionReceiveMessage(
+        let code = bridge::AMDServiceConnectionReceiveMessage(
             connection_ref,
             &response,
             std::ptr::null(),
@@ -129,10 +137,10 @@ pub fn receive_message(connection_ref: bridge::AMDServiceConnectionRef) -> CFDic
             std::ptr::null(),
         );
 
-        if res != 0 {
-            panic!("couldn't receive response");
+        if code != 0 {
+            return Err(code);
         }
 
-        response
+        return Ok(response);
     }
 }

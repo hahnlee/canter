@@ -11,4 +11,8 @@ export class IOSWebView {
   page = async () => {
     return new Page(this.service)
   }
+
+  close = async () => {
+    this.service.close()
+  }
 }

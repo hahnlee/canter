@@ -156,7 +156,9 @@ export class WIService {
         })
       ),
     })
+  }
 
-    // this.receiveMessage()
+  close = async () => {
+    this.service.close();
   }
 }

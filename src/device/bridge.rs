@@ -77,6 +77,9 @@ extern "C" {
         options: CFDictionaryRef,
         service_connection: *const AMDServiceConnectionRef,
     ) -> i32;
+    pub fn AMDServiceConnectionInvalidate(
+        connection: AMDServiceConnectionRef,
+    );
     pub fn AMDServiceConnectionSendMessage(
         connection: AMDServiceConnectionRef,
         message: CFDictionaryRef,

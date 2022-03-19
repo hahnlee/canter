@@ -1,6 +1,7 @@
 export declare class AMService {
   send(message: unknown): void
   registerReceiveListener(callback: (response: any) => void): void
+  close(): void
 }
 
 export declare class AMDevice {

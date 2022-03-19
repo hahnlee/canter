@@ -54,7 +54,8 @@ impl AMDevice {
   #[napi]
   pub fn start_service(&mut self, service_name: String) -> AMService {
     let connection_ref = canter::device::start_service(self.device, &service_name);
-    AMService::new(connection_ref)
+    let res = AMService::new(connection_ref);
+    res
   }
 }
 
@@ -65,10 +66,20 @@ pub struct AMService {
 
 #[napi]
 impl AMService {
-  pub fn new(connection_ref: AMDServiceConnectionRef) -> AMService {
-    AMService {
+  #[napi(constructor)]
+  pub fn noop() {
+    // NOTE: without empty constructor throws error at napi-rs
+  }
+
+  pub fn new(connection_ref: AMDServiceConnectionRef) -> Self {
+    Self {
       connection_ref: connection_ref,
     }
+  }
+
+  #[napi]
+  pub fn close(&mut self) {
+    canter::device::invalidate_connection(self.connection_ref);
   }
 
   #[napi]
@@ -88,8 +99,15 @@ impl AMService {
 
     thread::spawn(move || loop {
       let item = Arc::clone(&ptr);
-      let message = canter::device::receive_message(Arc::into_raw(item));
-      tsfn.call(message, ThreadsafeFunctionCallMode::Blocking);
+      let response = canter::device::receive_message(Arc::into_raw(item));
+      match response {
+        Ok(message) => {
+          tsfn.call(message, ThreadsafeFunctionCallMode::Blocking);
+        }
+        Err(_) => {
+          break;
+        }
+      }
     });
   }
 }

@@ -66,4 +66,8 @@ export class PageService {
       url,
     })
   }
+
+  close = async () => {
+    this.service.close();
+  }
 }
