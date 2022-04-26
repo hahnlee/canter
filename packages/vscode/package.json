@@ -1,5 +1,5 @@
 {
-  "name": "@canter/vscode",
+  "name": "canter-vscode",
   "private": true,
   "license": "Apache-2.0",
   "repository": {

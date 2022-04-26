@@ -1,4 +1,4 @@
-import { PageService } from '@canter/core'
+import { PageService } from 'canter-core'
 
 export class Page {
   private service: PageService

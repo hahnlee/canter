@@ -1,5 +1,5 @@
-import { WIService, BundleService } from '@canter/core'
-import { AMDevice } from '@canter/connector'
+import { WIService, BundleService } from 'canter-core'
+import { AMDevice } from 'canter-connector'
 
 import { IOSWebView } from './webview'
 

@@ -5,7 +5,7 @@ Works only on macOS.
 
 # Usage
 ```ts
-import ios from '@canter/playwright'
+import ios from 'canter-playwright'
 
 ;(async () => {
   const [device] = await ios.devices()
@@ -25,9 +25,9 @@ Provide [playwright android](https://playwright.dev/docs/api/class-android) comp
 - Navigate webpage
 
 # Packages
-- `@canter/core`
-- `@canter/connector`
-- `@canter/playwright`
+- `canter-core`
+- `canter-connector`
+- `canter-playwright`
 
 # License
 ```

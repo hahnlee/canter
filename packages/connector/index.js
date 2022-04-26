@@ -6,6 +6,6 @@ const { loadBinding } = require('@node-rs/helper')
  * the second arguments was decided by `napi.name` field in `package.json`
  * the third arguments was decided by `name` field in `package.json`
  * `loadBinding` helper will load `connector.[PLATFORM].node` from `__dirname` first
- * If failed to load addon, it will fallback to load from `@canter/connector-[PLATFORM]`
+ * If failed to load addon, it will fallback to load from `canter-connector-[PLATFORM]`
  */
-module.exports = loadBinding(__dirname, 'connector', '@canter/connector')
+module.exports = loadBinding(__dirname, 'connector', 'canter-connector')

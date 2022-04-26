@@ -1,4 +1,4 @@
-import { AMService } from '@canter/connector'
+import { AMService } from 'canter-connector'
 import { v4 } from 'uuid'
 import {
   ConnectedApplicationsResponse,

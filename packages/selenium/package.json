@@ -1,5 +1,5 @@
 {
-  "name": "@canter/selenium",
+  "name": "canter-selenium",
   "version": "0.0.1",
   "license": "Apache-2.0",
   "description": "selenium webdriver for remote safari",

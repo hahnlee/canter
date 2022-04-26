@@ -1,13 +1,13 @@
 {
-  "name": "@canter/playwright",
+  "name": "canter-playwright",
   "version": "0.0.1",
   "license": "Apache-2.0",
   "os": [
     "darwin"
   ],
   "dependencies": {
-    "@canter/connector": "workspace:packages/connector",
-    "@canter/core": "workspace:packages/core"
+    "canter-connector": "workspace:packages/connector",
+    "canter-core": "workspace:packages/core"
   },
   "devDependencies": {
     "@types/node": "^16.11.0",

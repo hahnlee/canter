@@ -1,4 +1,4 @@
-import { getDevices } from '@canter/connector'
+import { getDevices } from 'canter-connector'
 import { IOSDevice } from './device'
 
 class IOS {
